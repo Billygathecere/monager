@@ -1,0 +1,37 @@
+{
+  "name": "GAP//FLOW Money Command Center",
+  "short_name": "GAP//FLOW",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050b14",
+  "theme_color": "#07111f",
+  "description": "Personal financial command center for the GAP year.",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open dashboard",
+      "short_name": "Dashboard",
+      "url": "./index.html"
+    },
+    {
+      "name": "Enter salary",
+      "short_name": "Salary",
+      "url": "./index.html#salary"
+    },
+    {
+      "name": "Add expense",
+      "short_name": "Expense",
+      "url": "./index.html#expense"
+    }
+  ]
+}
