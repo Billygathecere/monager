@@ -66,9 +66,10 @@ function getGeminiClient() {
 // Live Exchange Rates API
 app.get('/api/rates', async (req, res) => {
   const now = Date.now();
-  const CACHE_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+  const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+  const isForce = req.query.refresh === '1' || req.query.force === '1' || req.query.refresh === 'true';
 
-  if (ratesCache.data && (now - ratesCache.timestamp < CACHE_DURATION_MS)) {
+  if (!isForce && ratesCache.data && (now - ratesCache.timestamp < CACHE_DURATION_MS)) {
     return res.json({
       success: true,
       cached: true,
@@ -78,44 +79,51 @@ app.get('/api/rates', async (req, res) => {
     });
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+  // Try live upstream sources with resilient timeout
+  const upstreamUrls = [
+    'https://open.er-api.com/v6/latest/USD',
+    'https://api.exchangerate-api.com/v4/latest/USD'
+  ];
 
-    const response = await fetch('https://open.er-api.com/v6/latest/USD', {
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
+  for (const url of upstreamUrls) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.rates) {
-        ratesCache = {
-          data: data.rates,
-          timestamp: now
-        };
-        return res.json({
-          success: true,
-          cached: false,
-          lastUpdated: new Date().toISOString(),
-          base: data.base_code || 'USD',
-          rates: data.rates
-        });
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.rates && data.rates.COP && data.rates.KES) {
+          ratesCache = {
+            data: data.rates,
+            timestamp: now
+          };
+          return res.json({
+            success: true,
+            cached: false,
+            lastUpdated: new Date().toISOString(),
+            base: data.base_code || data.base || 'USD',
+            rates: data.rates
+          });
+        }
       }
+    } catch (err) {
+      console.warn(`Failed fetching rates from ${url}:`, err.message);
     }
-    throw new Error('Upstream exchange rates response invalid');
-  } catch (err) {
-    console.warn('Could not fetch live rates from upstream API, serving cached or fallback rates:', err.message);
-    const ratesToUse = ratesCache.data || FALLBACK_RATES_USD;
-    return res.json({
-      success: true,
-      cached: true,
-      isFallback: !ratesCache.data,
-      lastUpdated: new Date(ratesCache.timestamp || now).toISOString(),
-      base: 'USD',
-      rates: ratesToUse
-    });
   }
+
+  // Fallback to cache or built-in current accurate market rates
+  const ratesToUse = ratesCache.data || FALLBACK_RATES_USD;
+  return res.json({
+    success: true,
+    cached: true,
+    isFallback: !ratesCache.data,
+    lastUpdated: new Date(ratesCache.timestamp || now).toISOString(),
+    base: 'USD',
+    rates: ratesToUse
+  });
 });
 
 // Gemini AI Financial Advisor Endpoint
@@ -169,46 +177,58 @@ YOUR BEHAVIOR & GUIDELINES:
 4. When suggesting plans, give concise structured bullet points with bold numbers. Avoid fluff or repetitive disclaimers. End with 1 actionable recommendation or follow-up prompt.`;
 
     if (ai) {
+      // Build clean alternating multiturn conversation history
       const contents = [];
 
       if (Array.isArray(history)) {
-        for (const item of history.slice(-6)) {
-          if (item && item.text) {
-            contents.push({
-              role: item.role === 'user' ? 'user' : 'model',
-              parts: [{ text: item.text }]
-            });
+        for (let i = 0; i < history.length; i++) {
+          const item = history[i];
+          if (item && item.text && typeof item.text === 'string') {
+            const role = item.role === 'model' ? 'model' : 'user';
+            // Prevent consecutive same roles
+            if (contents.length === 0 || contents[contents.length - 1].role !== role) {
+              contents.push({
+                role: role,
+                parts: [{ text: item.text }]
+              });
+            }
           }
         }
       }
 
-      contents.push({
-        role: 'user',
-        parts: [{ text: message }]
-      });
+      // Ensure the history ends cleanly with the current user message
+      if (contents.length > 0 && contents[contents.length - 1].role === 'user') {
+        contents[contents.length - 1].parts = [{ text: message }];
+      } else {
+        contents.push({
+          role: 'user',
+          parts: [{ text: message }]
+        });
+      }
 
-      // Try primary model, fallback to flash model if busy
-      const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
-      for (const modelName of modelsToTry) {
-        try {
-          const response = await ai.models.generateContent({
-            model: modelName,
-            contents: contents,
-            config: {
-              systemInstruction: systemInstruction,
-              temperature: 0.7,
-            }
-          });
+      // First turn must be user
+      if (contents.length > 0 && contents[0].role === 'model') {
+        contents.shift();
+      }
 
-          if (response && response.text) {
-            return res.json({
-              reply: response.text,
-              source: modelName
-            });
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: contents,
+          config: {
+            systemInstruction: systemInstruction,
+            temperature: 0.7,
           }
-        } catch (err) {
-          console.warn(`Model ${modelName} attempt error:`, err.message);
+        });
+
+        if (response && response.text) {
+          return res.json({
+            reply: response.text,
+            source: 'gemini-3.7-flash'
+          });
         }
+      } catch (err) {
+        console.warn('Gemini 3.7 Flash generateContent error:', err.message);
       }
     }
 

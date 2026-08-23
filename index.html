@@ -2454,8 +2454,27 @@
     if (!appState.salaryMonths) appState.salaryMonths = {};
     if (!appState.skips) appState.skips = {};
 
-    let forexData = null;
+    const DEFAULT_FOREX_RATES = {
+      USD: 1.0,
+      COP: 4120.50,
+      KES: 129.50,
+      EUR: 0.92,
+      GBP: 0.79,
+      CAD: 1.36,
+      AUD: 1.52,
+      JPY: 154.20,
+      INR: 83.45,
+      ZAR: 18.20,
+      AED: 3.6725,
+      CHF: 0.89,
+      BRL: 5.45,
+      CNY: 7.23,
+      MXN: 18.15
+    };
+
+    let forexData = { ...DEFAULT_FOREX_RATES };
     let forexBase = 'USD';
+    let forexIsLive = false;
     let activePageId = 'dashboard';
     let currentTheme = localStorage.getItem("gapFlowTheme") || "light";
     let currentAccent = localStorage.getItem("gapFlowAccent") || "slate";
@@ -2748,6 +2767,7 @@
       } else if (targetView === 'expenses') {
         renderExpensesView();
       } else if (targetView === 'currency') {
+        loadLiveForexRates(false);
         calculateForex();
       } else if (targetView === 'notifications') {
         renderNotificationsView();
@@ -3560,28 +3580,47 @@
 
     async function loadLiveForexRates(isManual = false) {
       const statusBadge = document.getElementById('forexStatusBadge');
-      if (statusBadge && isManual) {
-        statusBadge.textContent = '⏳ Refreshing...';
+      const liveTag = document.getElementById('forexLiveActiveTag');
+      const syncEl = document.getElementById('forexLastSync');
+
+      if (isManual) {
+        if (statusBadge) statusBadge.textContent = '⏳ Refreshing...';
+        if (liveTag) liveTag.textContent = '⏳ Syncing...';
       }
 
       try {
-        const res = await fetch('/api/rates');
+        const url = isManual ? '/api/rates?refresh=1' : '/api/rates';
+        const res = await fetch(url);
         const data = await res.json();
         if (data && data.rates) {
           forexData = data.rates;
           forexBase = data.base || 'USD';
+          forexIsLive = !data.isFallback;
           
+          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           if (statusBadge) {
-            statusBadge.textContent = data.isFallback ? '🟡 Cached Rates' : '🟢 Live Rates';
+            statusBadge.textContent = data.isFallback ? `🟡 Cached Rates (${timeStr})` : `🟢 Live Rates (${timeStr})`;
+            statusBadge.className = data.isFallback ? 'badge amber' : 'badge green';
           }
-          const syncEl = document.getElementById('forexLastSync');
+          if (liveTag) {
+            liveTag.textContent = data.isFallback ? 'Cached Market Data' : '🟢 Live Sync Active';
+            liveTag.className = data.isFallback ? 'badge amber' : 'badge cyan';
+          }
           if (syncEl) {
-            syncEl.textContent = 'Synced ' + new Date().toLocaleTimeString();
+            syncEl.textContent = 'Synced ' + timeStr;
           }
           calculateForex();
+          if (isManual) {
+            playChime('success');
+            showToastNotification("Forex Synced", `Updated exchange rates (COP, KES, USD).`, "info", "💱");
+          }
         }
       } catch (err) {
         console.warn('Could not refresh live rates:', err);
+        if (statusBadge && isManual) {
+          statusBadge.textContent = '🟡 Offline Rates';
+          statusBadge.className = 'badge amber';
+        }
       }
     }
 
@@ -3615,7 +3654,7 @@
 
       if (reverse) {
         // User typed into the "Receive / To" box -> compute "Send / From"
-        inUsd = amountTo / rateToUsd;
+        inUsd = rateToUsd > 0 ? (amountTo / rateToUsd) : 0;
         amountFrom = inUsd * rateFromUsd;
         if (fromInput && document.activeElement === toInput) {
           fromInput.value = (from === 'COP' || from === 'JPY') ? Math.round(amountFrom) : Number(amountFrom.toFixed(2));
@@ -3623,7 +3662,7 @@
         convertedValue = amountTo;
       } else {
         // User typed into "Send / From" or changed dropdowns
-        inUsd = amountFrom / rateFromUsd;
+        inUsd = rateFromUsd > 0 ? (amountFrom / rateFromUsd) : 0;
         convertedValue = inUsd * rateToUsd;
         if (toInput && document.activeElement !== toInput) {
           toInput.value = (to === 'COP' || to === 'JPY') ? Math.round(convertedValue) : Number(convertedValue.toFixed(2));
@@ -3631,8 +3670,8 @@
       }
 
       // Rates
-      const oneUnitConverted = (1 / rateFromUsd) * rateToUsd;
-      const invUnitConverted = (1 / rateToUsd) * rateFromUsd;
+      const oneUnitConverted = rateFromUsd > 0 ? ((1 / rateFromUsd) * rateToUsd) : 0;
+      const invUnitConverted = rateToUsd > 0 ? ((1 / rateToUsd) * rateFromUsd) : 0;
 
       // Update Top Dynamic Result Highlight Banner
       const conversionBadge = document.getElementById('forexConversionBadge');
@@ -3650,7 +3689,7 @@
       if (readableSummary) {
         const fromDec = (from === 'COP' || from === 'JPY') ? 0 : 2;
         const toDec = (to === 'COP' || to === 'JPY') ? 0 : 2;
-        readableSummary.textContent = `${amountFrom.toLocaleString(undefined, { maximumFractionDigits: fromDec })} ${from} (${fromObj.name}) is worth ${convertedValue.toLocaleString(undefined, { maximumFractionDigits: toDec })} ${to} (${toObj.name}) in ${toObj.name}`;
+        readableSummary.textContent = `${amountFrom.toLocaleString(undefined, { maximumFractionDigits: fromDec })} ${from} (${fromObj.name}) = ${convertedValue.toLocaleString(undefined, { maximumFractionDigits: toDec })} ${to} (${toObj.name})`;
       }
 
       // Rate pills
@@ -3796,10 +3835,21 @@
 
     async function submitAiMessage(customPrompt) {
       const input = document.getElementById('aiChatInput');
+      const sendBtn = document.getElementById('aiSendButton');
       const text = customPrompt || (input ? input.value.trim() : '');
       if (!text) return;
 
       if (input) input.value = '';
+      if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = `<span>Thinking...</span> ⏳`;
+      }
+
+      // Collect existing history before pushing new user message
+      const historyPayload = appState.chat.slice(-6).map(m => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        text: m.text
+      }));
 
       // Append user msg to local state
       appState.chat.push({ role: 'user', text: text });
@@ -3811,7 +3861,7 @@
       const typingEl = document.createElement('div');
       typingEl.className = 'typing-box';
       typingEl.id = 'aiTypingBubble';
-      typingEl.innerHTML = `GAP//AI is calculating <span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+      typingEl.innerHTML = `GAP//AI is calculating with Gemini <span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
       log.appendChild(typingEl);
       log.scrollTop = log.scrollHeight;
 
@@ -3830,15 +3880,10 @@
         currency: 'COP',
         allocations: allocs,
         spentByCategory: sums,
-        recentExpenses: appState.expenses.slice(-10)
+        recentExpenses: appState.expenses.slice(-12)
       };
 
       try {
-        const historyPayload = appState.chat.slice(-8).map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          text: m.text
-        }));
-
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3850,7 +3895,7 @@
         });
 
         const data = await res.json();
-        const reply = data.reply || 'I reviewed your financial trajectory.';
+        const reply = data.reply || data.error || 'I reviewed your financial trajectory.';
 
         const typing = document.getElementById('aiTypingBubble');
         if (typing) typing.remove();
@@ -3858,6 +3903,11 @@
         appState.chat.push({ role: 'model', text: reply });
         persistState();
         renderAiChatView();
+
+        const engineBadge = document.getElementById('aiActiveEngineBadge');
+        if (engineBadge) {
+          engineBadge.textContent = data.source === 'gemini-3.7-flash' ? '✨ Gemini 3.7 Flash' : '🤖 GAP//AI Strategy Engine';
+        }
 
       } catch (err) {
         console.error('AI chat request failed:', err);
@@ -3870,6 +3920,12 @@
         });
         persistState();
         renderAiChatView();
+      } finally {
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = `<span>Send</span> ✨`;
+        }
+        if (input) input.focus();
       }
     }
 
@@ -3903,22 +3959,32 @@
     // Markdown Parser
     function formatMarkdownText(text) {
       if (!text) return '';
-      let html = escapeHtml(text);
-      // Headers
-      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-      html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
-      html = html.replace(/^# (.*$)/gim, '<h3>$1</h3>');
-      // Bold
-      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      // Code tags
-      html = html.replace(/`(.*?)`/g, '<code>$1</code>');
-      // Lists
-      html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
-      html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
-      html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-      // Line breaks
-      html = html.replace(/\n\n/g, '<br><br>');
-      return html;
+      let str = escapeHtml(text);
+
+      // Code blocks
+      str = str.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      // Inline code
+      str = str.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // Headings
+      str = str.replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px; font-weight: 700; font-size: 14px;">$1</h4>');
+      str = str.replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 4px; font-weight: 700; font-size: 15px;">$1</h3>');
+      str = str.replace(/^# (.*$)/gim, '<h2 style="margin: 12px 0 6px; font-weight: 800; font-size: 16px;">$1</h2>');
+
+      // Bold & Italic
+      str = str.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      str = str.replace(/\*([^\*\n]+)\*/g, '<em>$1</em>');
+
+      // Bullet lists
+      str = str.replace(/^[\*\-] (.*$)/gim, '<li style="margin-left: 18px; margin-bottom: 3px;">$1</li>');
+      // Numbered lists
+      str = str.replace(/^\d+\.\s+(.*$)/gim, '<li style="margin-left: 18px; margin-bottom: 3px; list-style-type: decimal;">$1</li>');
+
+      // Paragraph / line breaks
+      str = str.replace(/\n\n/g, '<br><br>');
+      str = str.replace(/\n/g, '<br>');
+      return str;
     }
 
     function escapeHtml(str) {
@@ -4420,6 +4486,9 @@
       renderApp();
       loadLiveForexRates();
       refreshAppPermissionsStatus();
+
+      // Background live forex sync every 60 seconds
+      setInterval(() => loadLiveForexRates(false), 60000);
 
       // Run reminder checks on startup & every 3 minutes
       checkScheduledReminders();
