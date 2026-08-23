@@ -7,6 +7,7 @@
   <title>GAP//FLOW Money Command Center</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <style>
     /* ======================================================== */
     /* THEME DESIGN TOKENS (LIGHT, MONOCHROME, WARM & DARK MODES) */
@@ -288,6 +289,24 @@
       --cyan-light: #f1f5f9;
       --cyan-border: #cbd5e1;
       --cyan-glow: rgba(51, 65, 85, 0.15);
+    }
+    html[data-accent="rose"] {
+      --cyan: #e11d48;
+      --cyan-light: #fff1f2;
+      --cyan-border: #fecdd3;
+      --cyan-glow: rgba(225, 29, 72, 0.2);
+    }
+    html[data-accent="teal"] {
+      --cyan: #0d9488;
+      --cyan-light: #f0fdfa;
+      --cyan-border: #99f6e4;
+      --cyan-glow: rgba(13, 148, 136, 0.2);
+    }
+    html[data-accent="indigo"] {
+      --cyan: #4f46e5;
+      --cyan-light: #eef2ff;
+      --cyan-border: #c7d2fe;
+      --cyan-glow: rgba(79, 70, 229, 0.2);
     }
 
     /* FONT SCALING */
@@ -1320,6 +1339,7 @@
     .settings-tile:hover {
       border-color: var(--cyan);
       background: var(--btn-secondary-hover);
+      transform: translateY(-1px);
     }
     .settings-tile.active {
       border-color: var(--cyan);
@@ -1334,6 +1354,114 @@
     .settings-tile-sub {
       font-size: 11px;
       color: var(--text-muted);
+    }
+
+    /* SETTINGS SUBNAV PILL BAR */
+    .settings-subnav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px;
+      margin-bottom: 16px;
+      background: var(--btn-secondary-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: 60px;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .settings-subnav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.16s ease;
+      box-shadow: none;
+    }
+    .settings-subnav-btn:hover {
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.04);
+    }
+    html[data-theme="dark"] .settings-subnav-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .settings-subnav-btn.active {
+      color: var(--tab-active-text);
+      background: var(--surface);
+      border-color: var(--card-border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    /* COUNTRY & LANGUAGE CARD TILES */
+    .country-card-tile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1.5px solid var(--card-border);
+      background: var(--btn-secondary-bg);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      user-select: none;
+      text-align: left;
+    }
+    .country-card-tile:hover {
+      border-color: var(--cyan);
+      background: var(--btn-secondary-hover);
+      transform: translateY(-1px);
+    }
+    .country-card-tile.active {
+      border-color: var(--cyan);
+      background: var(--tab-active-bg);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+    .country-flag-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+    .country-name-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .country-meta-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .lang-card-tile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--card-border);
+      background: var(--btn-secondary-bg);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      user-select: none;
+    }
+    .lang-card-tile:hover {
+      border-color: var(--cyan);
+      background: var(--btn-secondary-hover);
+      transform: translateY(-1px);
+    }
+    .lang-card-tile.active {
+      border-color: var(--cyan);
+      background: var(--tab-active-bg);
+      box-shadow: 0 0 12px var(--cyan-glow);
     }
 
     /* MODAL */
@@ -1438,6 +1566,422 @@
       font-size: 13px;
     }
 
+    /* ======================================================== */
+    /* USER PROFILE NAVBAR PILL & SETTINGS WINDOW STYLES */
+    /* ======================================================== */
+    .user-profile-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--btn-secondary-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 99px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      user-select: none;
+    }
+    .user-profile-btn:hover {
+      border-color: var(--cyan);
+      background: var(--btn-secondary-hover);
+    }
+    .user-avatar-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--cyan-light);
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    /* APPLE SIGN IN BUTTON */
+    .apple-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 18px;
+      background: #000000;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      user-select: none;
+    }
+    html[data-theme="dark"] .apple-btn {
+      background: #ffffff;
+      color: #000000;
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+    .apple-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+      opacity: 0.96;
+    }
+    .apple-btn:active {
+      transform: translateY(0);
+    }
+    .apple-icon-svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* AUTH DIVIDER */
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 16px 0;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .auth-divider span {
+      padding: 0 10px;
+    }
+
+    /* LANDING PAGE CONTAINER */
+    .landing-container {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 10;
+      overflow-x: hidden;
+    }
+    .landing-header {
+      border-bottom: 1px solid var(--navbar-border);
+      background: var(--navbar-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .landing-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 14px 20px;
+    }
+    .landing-hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+      align-items: center;
+      flex: 1;
+    }
+    @media (max-width: 900px) {
+      .landing-hero-grid {
+        grid-template-columns: 1fr;
+        padding: 24px 16px 40px;
+        gap: 28px;
+      }
+    }
+    .landing-auth-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+    @media (max-width: 480px) {
+      .landing-auth-card { padding: 20px 16px; border-radius: 16px; }
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--btn-secondary-bg);
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      text-align: center;
+    }
+    .auth-tab-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      font-weight: 700;
+    }
+
+    /* SETTINGS WINDOW MODAL */
+    .settings-window-dialog {
+      max-width: 820px;
+      width: 100%;
+      background: var(--modal-bg);
+      border: 1px solid var(--modal-border);
+      border-radius: 20px;
+      padding: 0;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .settings-window-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+    .settings-window-body {
+      display: flex;
+      flex: 1;
+      min-height: 480px;
+      max-height: calc(90vh - 65px);
+      overflow: hidden;
+    }
+    @media (max-width: 720px) {
+      .settings-window-body {
+        flex-direction: column;
+        min-height: auto;
+        max-height: 80vh;
+      }
+    }
+    .settings-window-sidebar {
+      width: 220px;
+      background: var(--btn-secondary-bg);
+      border-right: 1px solid var(--card-border);
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    @media (max-width: 720px) {
+      .settings-window-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--card-border);
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 8px;
+        gap: 6px;
+      }
+    }
+    .win-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      white-space: nowrap;
+    }
+    .win-tab-btn:hover {
+      background: var(--btn-secondary-hover);
+      color: var(--text);
+    }
+    .win-tab-btn.active {
+      background: var(--surface);
+      color: var(--cyan);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      font-weight: 700;
+    }
+    .settings-window-content {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: var(--modal-bg);
+    }
+    @media (max-width: 600px) {
+      .settings-window-content { padding: 16px; }
+    }
+
+    /* STAR RATING WIDGET */
+    .star-rating-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      user-select: none;
+      margin: 8px 0;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 32px;
+      cursor: pointer;
+      color: #94a3b8;
+      transition: transform 0.15s ease, color 0.15s ease;
+      line-height: 1;
+    }
+    .star-btn:hover {
+      transform: scale(1.25);
+    }
+    .star-btn.active {
+      color: #f59e0b;
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.45));
+    }
+
+    /* ACCOUNT TILES */
+    .account-tile-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--card-border);
+      background: var(--surface);
+      margin-bottom: 8px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .account-tile-card:hover {
+      border-color: var(--cyan);
+      background: var(--btn-secondary-hover);
+    }
+    .account-tile-card.active {
+      border-color: var(--cyan);
+      background: var(--tab-active-bg);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    /* D3 PIE & DONUT CHART STYLES */
+    .d3-pie-wrapper {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 24px;
+      align-items: center;
+      padding: 16px 8px;
+      min-height: 320px;
+    }
+    @media (max-width: 768px) {
+      .d3-pie-wrapper {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+    .d3-svg-stage {
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+      margin: 0 auto;
+      display: block;
+      overflow: visible;
+    }
+    .d3-pie-slice {
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, filter 0.2s ease;
+      transform-origin: center center;
+    }
+    .d3-pie-slice:hover, .d3-pie-slice.highlighted {
+      transform: scale(1.04);
+      filter: drop-shadow(0 4px 12px var(--cyan-glow));
+    }
+    .d3-center-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      fill: var(--text-muted);
+      text-anchor: middle;
+    }
+    .d3-center-value {
+      font-size: 18px;
+      font-weight: 800;
+      fill: var(--text);
+      text-anchor: middle;
+      font-feature-settings: "tnum";
+    }
+    .d3-center-sub {
+      font-size: 11px;
+      font-weight: 500;
+      fill: var(--cyan);
+      text-anchor: middle;
+    }
+    .d3-legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      align-content: center;
+    }
+    .d3-legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--card-border);
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .d3-legend-item:hover, .d3-legend-item.active {
+      border-color: var(--cyan);
+      background: var(--btn-secondary-hover);
+      transform: translateY(-1px);
+    }
+    .d3-legend-color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .d3-empty-pie-card {
+      text-align: center;
+      padding: 32px 16px;
+      border: 2px dashed var(--card-border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
     .hide { display: none !important; }
   </style>
 </head>
@@ -1494,6 +2038,11 @@
 
       <!-- HEADER QUICK ACTION BUTTONS -->
       <div class="navbar-actions">
+        <button id="userProfileHeaderBtn" class="user-profile-btn" onclick="openSettingsWindow('account')" title="Account Profile & Settings" aria-label="Account Profile & Settings">
+          <span id="navUserAvatar" class="user-avatar-badge">🍏</span>
+          <span id="navUserName">Brian G.</span>
+          <span style="font-size: 10px; opacity: 0.7;">▾</span>
+        </button>
         <button id="appCurrencyHeaderBtn" class="currency-pill-btn" onclick="openCurrencySwitcherDialog()" title="Change App Base Currency" aria-label="Change App Base Currency">
           <span id="appCurrencyHeaderFlag">🇨🇴</span>
           <span id="appCurrencyHeaderCode">COP</span>
@@ -1529,13 +2078,13 @@
         <div class="space-between">
           <div>
             <span class="badge cyan">Monthly Flow Cycle</span>
-            <div class="muted" style="margin-top: 4px;">Active Monthly Salary Base (<span id="dashCurCode">COP</span>)</div>
+            <div class="muted" style="margin-top: 4px;"><span data-i18n="dash_salary_label">Active Monthly Salary Base</span> (<span id="dashCurCode">COP</span>)</div>
             <div class="big-num" id="dashSalText">COP 2,300,000</div>
           </div>
           <div class="row">
-            <button class="primary" onclick="openSalaryDialog()">💵 Enter / Update Salary</button>
-            <button class="secondary" onclick="openCurrencySwitcherDialog()">🌐 Change Currency</button>
-            <button class="secondary" onclick="switchPage('notifications')">🔔 25th Reminders</button>
+            <button class="primary" onclick="openSalaryDialog()" data-i18n="btn_adjust_salary">💵 Enter / Update Salary</button>
+            <button class="secondary" onclick="openCurrencySwitcherDialog()" data-i18n="btn_change_currency">🌐 Change Currency</button>
+            <button class="secondary" onclick="switchPage('notifications')" data-i18n="btn_reminders_25th">🔔 25th Reminders</button>
           </div>
         </div>
       </section>
@@ -1543,24 +2092,54 @@
       <!-- 4 KEY KPI CARDS -->
       <section class="grid-4">
         <div class="card">
-          <div class="muted">Total Spent This Month</div>
+          <div class="muted" data-i18n="dash_spent_label">Total Spent This Month</div>
           <div class="big-num" id="dashSpentText">COP 0</div>
           <span class="dim" id="dashTxCount">0 expenses recorded</span>
         </div>
         <div class="card">
-          <div class="muted">Distributed Budget</div>
+          <div class="muted" data-i18n="dash_allocated_label">Total Budget Allocated</div>
           <div class="big-num cyan" id="dashAllocText">COP 2,300,000</div>
           <span class="dim">Proportionally scaled</span>
         </div>
         <div class="card">
-          <div class="muted">Unspent Safe Buffer</div>
+          <div class="muted" data-i18n="dash_remaining_label">Unspent Safe Buffer</div>
           <div class="big-num green" id="dashLeftText">COP 2,300,000</div>
           <span class="dim">Remaining monthly margin</span>
         </div>
         <div class="card">
-          <div class="muted">Health Status</div>
+          <div class="muted" data-i18n="dash_health_status">Health Status</div>
           <div class="big-num green" id="dashHealthStatus">GREEN</div>
           <span class="dim" id="dashHealthMsg">Optimal spending rate</span>
+        </div>
+      </section>
+
+      <!-- D3 CATEGORY SPENDING PIE / DONUT CHART SECTION -->
+      <section class="card highlight" style="margin-bottom: 16px;" id="dashPieChartSection">
+        <div class="space-between" style="margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge cyan">D3 Interactive Analytics</span>
+              <span class="badge green" id="dashPieMonthBadge">Current Cycle</span>
+            </div>
+            <h2 style="margin-top: 4px; margin-bottom: 2px;" data-i18n="dash_pie_title">🥧 Category Spending Distribution</h2>
+            <p class="muted" style="margin-bottom: 0;" data-i18n="dash_pie_sub">Live breakdown of expenses across categories for the active monthly cycle</p>
+          </div>
+          <div class="row" style="gap: 8px; flex-wrap: wrap;">
+            <select id="dashPieMonthFilter" onchange="renderD3CategoryPieChart()" style="padding: 5px 10px; font-size: 12px; border-radius: 8px;">
+              <!-- Populated dynamically with recorded cycles -->
+            </select>
+            <button class="secondary sm" onclick="seedSampleExpenses()" data-i18n="dash_pie_seed_btn" title="Populate demo transactions to test pie chart distribution">
+              ✨ Seed Demo Data
+            </button>
+            <button class="primary sm" onclick="openExpenseDialog()" data-i18n="btn_add_expense">
+              ＋ Log Expense
+            </button>
+          </div>
+        </div>
+
+        <!-- D3 SVG DONUT STAGE & INTERACTIVE LEGEND -->
+        <div id="d3PieChartContainer" class="d3-pie-wrapper">
+          <!-- Populated by renderD3CategoryPieChart() -->
         </div>
       </section>
 
@@ -1570,10 +2149,10 @@
         <!-- BUCKETS PROGRESS -->
         <section class="card">
           <div class="space-between" style="margin-bottom: 12px;">
-            <h2>🎯 Budget Bucket Health</h2>
+            <h2 data-i18n="dash_bucket_health">🎯 Budget Bucket Health</h2>
             <div class="row">
-              <button class="sm primary" onclick="openAddBudgetItemDialog()">＋ Add Item</button>
-              <button class="sm secondary" onclick="switchPage('budget')">Manage Budget →</button>
+              <button class="sm primary" onclick="openAddBudgetItemDialog()" data-i18n="btn_add_item">＋ Add Item</button>
+              <button class="sm secondary" onclick="switchPage('budget')" data-i18n="btn_manage_budget">Manage Budget →</button>
             </div>
           </div>
           <div id="dashBucketsProgress"></div>
@@ -1582,8 +2161,8 @@
         <!-- RECENT ACTIVITY -->
         <section class="card">
           <div class="space-between" style="margin-bottom: 12px;">
-            <h2>🧾 Recent Activity</h2>
-            <button class="sm secondary" onclick="switchPage('expenses')">Full Ledger →</button>
+            <h2 data-i18n="dash_recent_activity">🧾 Recent Activity</h2>
+            <button class="sm secondary" onclick="switchPage('expenses')" data-i18n="btn_full_ledger">Full Ledger →</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -1599,7 +2178,7 @@
             </table>
           </div>
           <div style="margin-top: 14px;">
-            <button class="primary sm" style="width: 100%;" onclick="openExpenseDialog()">＋ Log New Expense</button>
+            <button class="primary sm" style="width: 100%;" onclick="openExpenseDialog()" data-i18n="btn_add_expense">＋ Log New Expense</button>
           </div>
         </section>
 
@@ -1609,8 +2188,8 @@
       <section class="card" style="margin-top: 16px;">
         <div class="space-between" style="margin-bottom: 12px;">
           <div>
-            <h2>📈 Monthly Spending Trajectory</h2>
-            <p class="muted" style="margin-bottom: 0;">Month-over-month expenses plotted against salary buffer limit</p>
+            <h2 data-i18n="dash_trajectory_title">📈 Monthly Spending Trajectory</h2>
+            <p class="muted" style="margin-bottom: 0;" data-i18n="dash_trajectory_sub">Month-over-month expenses plotted against salary buffer limit</p>
           </div>
           <div class="row" style="gap: 8px;">
             <span class="badge cyan" id="chartExpensesBadge">● Expenses</span>
@@ -2030,16 +2609,53 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- 7. SETTINGS, APPEARANCE & PERMISSIONS VIEW -->
+    <!-- 7. SETTINGS, CUSTOMIZATION, COUNTRY & LOCALE STUDIO -->
     <!-- ====================================================== -->
     <div id="view-settings" class="page-view">
       
+      <!-- SETTINGS SUB-NAV PILL BAR -->
+      <div class="settings-subnav" role="tablist" aria-label="Settings Categories">
+        <button class="settings-subnav-btn active" id="setNavBtn-appearance" onclick="jumpToSettingsSection('appearance')">
+          <span>🎨</span> <span>Appearance</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-country" onclick="jumpToSettingsSection('country')">
+          <span>🌍</span> <span>Country & Region</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-currency" onclick="jumpToSettingsSection('currency')">
+          <span>💱</span> <span>Currency & FX</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-language" onclick="jumpToSettingsSection('language')">
+          <span>🗣️</span> <span>Language (i18n)</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-formats" onclick="jumpToSettingsSection('formats')">
+          <span>📅</span> <span>Payday & Formats</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-permissions" onclick="jumpToSettingsSection('permissions')">
+          <span>🔒</span> <span>Permissions & Audio</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-account" onclick="jumpToSettingsSection('account')">
+          <span>👤</span> <span>Account & Log Out</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-rating" onclick="jumpToSettingsSection('rating')">
+          <span>⭐</span> <span>Rate App</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-feedback" onclick="jumpToSettingsSection('feedback')">
+          <span>💬</span> <span>Feedback</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-data" onclick="jumpToSettingsSection('data')">
+          <span>💾</span> <span>Data & Backup</span>
+        </button>
+        <button class="settings-subnav-btn" id="setNavBtn-about" onclick="jumpToSettingsSection('about')">
+          <span>ℹ️</span> <span>Version & About</span>
+        </button>
+      </div>
+
       <!-- 1. APPEARANCE STUDIO -->
-      <section class="card highlight" style="margin-bottom: 14px;">
+      <section id="settings-sec-appearance" class="card highlight" style="margin-bottom: 14px;">
         <div class="space-between">
           <div>
             <h2>🎨 Appearance & Theme Studio</h2>
-            <p>Customize the visual look and feel of GAP//FLOW. The default theme is tailored with clean, high-contrast grey and crisp white aesthetics.</p>
+            <p>Customize the visual style, typography, and contrast of GAP//FLOW. Default styling delivers an ultra-clean, high-contrast light grey & white aesthetic.</p>
           </div>
           <span class="badge" id="activeThemeBadge">☀️ Light Grey & White</span>
         </div>
@@ -2061,17 +2677,60 @@
             <div id="theme-tile-warm" class="settings-tile" onclick="setAppTheme('warm')">
               <span style="font-size: 22px;">🌾</span>
               <div class="settings-tile-title">Warm Cashmere</div>
-              <div class="settings-tile-sub">Soft off-white & charcoal</div>
+              <div class="settings-tile-sub">Soft off-white & stone</div>
             </div>
             <div id="theme-tile-dark" class="settings-tile" onclick="setAppTheme('dark')">
               <span style="font-size: 22px;">🌙</span>
               <div class="settings-tile-title">Cyber Twilight</div>
-              <div class="settings-tile-sub">Deep dark mode</div>
+              <div class="settings-tile-sub">OLED deep dark mode</div>
             </div>
             <div id="theme-tile-auto" class="settings-tile" onclick="setAppTheme('auto')">
               <span style="font-size: 22px;">⚙️</span>
               <div class="settings-tile-title">Auto System</div>
               <div class="settings-tile-sub">Follows device OS</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TYPOGRAPHY / PHONE SYSTEM FONT ADOPTION -->
+        <div style="margin-top: 16px;">
+          <div class="space-between" style="margin-bottom: 6px;">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em;">Typography & Phone Font Rendering</div>
+            <span class="badge" id="activeFontBadge">📱 Phone Font</span>
+          </div>
+          <p class="muted" style="margin-bottom: 8px;">
+            Selecting <b>Adopt Phone Font</b> instructs the browser engine to render typography using your phone's native OS font (San Francisco on iOS/macOS, Roboto/Samsung One on Android) for maximum legibility and natural feel.
+          </p>
+          <div class="settings-option-grid">
+            <div id="font-tile-phone" class="settings-tile active" onclick="setAppFont('phone')">
+              <span style="font-size: 20px;">📱</span>
+              <div class="settings-tile-title">Adopt Phone Font</div>
+              <div class="settings-tile-sub">Native OS (iOS / Android)</div>
+            </div>
+            <div id="font-tile-ios" class="settings-tile" onclick="setAppFont('ios')">
+              <span style="font-size: 20px;">🍎</span>
+              <div class="settings-tile-title">Apple SF Pro</div>
+              <div class="settings-tile-sub">iOS & macOS Typography</div>
+            </div>
+            <div id="font-tile-android" class="settings-tile" onclick="setAppFont('android')">
+              <span style="font-size: 20px;">🤖</span>
+              <div class="settings-tile-title">Android Roboto</div>
+              <div class="settings-tile-sub">Android & One UI System</div>
+            </div>
+            <div id="font-tile-sans" class="settings-tile" onclick="setAppFont('sans')">
+              <span style="font-size: 20px;">🔤</span>
+              <div class="settings-tile-title">Modern Sans</div>
+              <div class="settings-tile-sub">Plus Jakarta Sans</div>
+            </div>
+            <div id="font-tile-mono" class="settings-tile" onclick="setAppFont('mono')">
+              <span style="font-size: 20px;">💻</span>
+              <div class="settings-tile-title">Tech Mono</div>
+              <div class="settings-tile-sub">JetBrains Monospace</div>
+            </div>
+            <div id="font-tile-serif" class="settings-tile" onclick="setAppFont('serif')">
+              <span style="font-size: 20px;">📰</span>
+              <div class="settings-tile-title">Editorial Serif</div>
+              <div class="settings-tile-sub">Classic Georgia Serif</div>
             </div>
           </div>
         </div>
@@ -2100,6 +2759,18 @@
               <div style="width: 16px; height: 16px; border-radius: 50%; background: #d97706; margin-bottom: 2px;"></div>
               <div class="settings-tile-title">Amber Copper</div>
             </div>
+            <div id="accent-tile-rose" class="settings-tile" onclick="setAccentColor('rose')">
+              <div style="width: 16px; height: 16px; border-radius: 50%; background: #e11d48; margin-bottom: 2px;"></div>
+              <div class="settings-tile-title">Rose Ruby</div>
+            </div>
+            <div id="accent-tile-teal" class="settings-tile" onclick="setAccentColor('teal')">
+              <div style="width: 16px; height: 16px; border-radius: 50%; background: #0d9488; margin-bottom: 2px;"></div>
+              <div class="settings-tile-title">Teal Jade</div>
+            </div>
+            <div id="accent-tile-indigo" class="settings-tile" onclick="setAccentColor('indigo')">
+              <div style="width: 16px; height: 16px; border-radius: 50%; background: #4f46e5; margin-bottom: 2px;"></div>
+              <div class="settings-tile-title">Electric Indigo</div>
+            </div>
           </div>
         </div>
 
@@ -2122,20 +2793,66 @@
           </div>
         </div>
 
+        <!-- LIVE FONT & PALETTE PREVIEW BOX -->
+        <div style="margin-top: 16px; padding: 14px; border-radius: 12px; background: var(--btn-secondary-bg); border: 1px solid var(--card-border);">
+          <div class="dim" style="margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Live Typography & Appearance Preview</div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="fontPreviewSample">
+            COP 2,300,000 • Monthly Salary Allocation & Cashflow Command
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+            The quick brown fox jumps over the lazy dog. 1 USD = 4,120.50 COP • 1 COP = 0.0314 KES • 1 EUR = 1.08 USD.
+          </div>
+        </div>
       </section>
 
-      <!-- 2. APP BASE CURRENCY SELECTOR -->
-      <section class="card" style="margin-bottom: 14px;">
+      <!-- 2. COUNTRY & REGIONAL PRESETS -->
+      <section id="settings-sec-country" class="card" style="margin-bottom: 14px;">
         <div class="space-between">
           <div>
-            <h2>🌐 App Base Currency</h2>
-            <p>Select the primary currency used throughout the app for salary, budget categories, and expense records. Switch seamlessly from COP to KES, USD, EUR, GBP, or any global currency.</p>
+            <h2>🌍 Country & Regional Customization</h2>
+            <p>Select your home or operational country. Selecting a country will highlight its regional defaults for currency, language, and date conventions.</p>
+          </div>
+          <span class="badge cyan" id="settingsActiveCountryBadge">🇨🇴 Colombia</span>
+        </div>
+
+        <!-- ACTIVE COUNTRY HIGHLIGHT BANNER -->
+        <div id="countryActiveBanner" style="margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--card-border);" class="space-between">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="countryBannerFlag" style="font-size: 36px; line-height: 1;">🇨🇴</div>
+            <div>
+              <div style="font-size: 15px; font-weight: 800; color: var(--text);" id="countryBannerName">Colombia</div>
+              <div class="dim" id="countryBannerMeta">Default Currency: COP (Colombian Peso) • Primary Language: Español</div>
+            </div>
+          </div>
+          <button class="primary sm" id="countryApplyDefaultsBtn" onclick="applySelectedCountryDefaults()">
+            ⚡ Apply Country Defaults (Currency & Language)
+          </button>
+        </div>
+
+        <!-- COUNTRY SEARCH & GRID -->
+        <div style="margin-top: 14px;">
+          <div class="space-between" style="margin-bottom: 8px;">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em;">Select Your Country</div>
+            <input type="text" id="countrySearchInput" placeholder="🔍 Filter countries..." style="padding: 5px 10px; font-size: 12px; max-width: 200px;" oninput="filterCountryGrid(this.value)">
+          </div>
+          <div class="settings-option-grid" id="settingsCountryGrid" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));">
+            <!-- Dynamically rendered via renderSettingsCountryGrid() -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. APP BASE CURRENCY SELECTOR -->
+      <section id="settings-sec-currency" class="card" style="margin-bottom: 14px;">
+        <div class="space-between">
+          <div>
+            <h2>💱 App Base Currency & Exchange Rates</h2>
+            <p>Select the base currency used throughout the app for monthly salary, budget category targets, and expense records. Switch seamlessly between COP, KES, USD, EUR, GBP, or any global currency.</p>
           </div>
           <span class="badge cyan" id="settingsActiveCurrencyBadge">🇨🇴 COP (Colombian Peso)</span>
         </div>
 
         <div style="margin-top: 14px;">
-          <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Popular Currencies</div>
+          <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Popular Global Currencies</div>
           <div class="settings-option-grid" id="settingsCurrencyGrid">
             <!-- Dynamically populated / styled -->
           </div>
@@ -2145,70 +2862,94 @@
           <div style="display: flex; align-items: center; gap: 8px;">
             <input type="checkbox" id="convertExistingCurCheckbox" checked style="cursor: pointer;">
             <label for="convertExistingCurCheckbox" style="font-size: 13px; cursor: pointer;">
-              <b>Auto-convert existing financial amounts</b> using live exchange rates when changing currency
+              <b>Auto-convert existing financial amounts</b> using live exchange rates when changing base currency
             </label>
           </div>
           <button class="primary sm" onclick="openCurrencySwitcherDialog()">🌐 Custom Currency Switcher</button>
         </div>
       </section>
 
-      <!-- 3. TYPOGRAPHY & PHONE FONT ADOPTION -->
-      <section class="card" style="margin-bottom: 14px;">
+      <!-- 4. LANGUAGE & INTERNATIONALIZATION (i18n) -->
+      <section id="settings-sec-language" class="card" style="margin-bottom: 14px;">
         <div class="space-between">
           <div>
-            <h2>🔤 Typography & Phone System Font Adoption</h2>
-            <p>Selecting <b>Adopt Phone Font</b> ensures the typography automatically matches your device's native OS font (San Francisco on iOS/macOS, Roboto/Samsung One on Android) for maximum legibility and native feel.</p>
+            <h2>🗣️ Language & Internationalization (i18n)</h2>
+            <p>Select your preferred display language for navigation menus, metric titles, action buttons, dialogs, and AI assistant responses.</p>
           </div>
-          <span class="badge" id="activeFontBadge">📱 Phone Font</span>
+          <span class="badge" id="settingsActiveLanguageBadge">🇬🇧 English</span>
         </div>
 
-        <div class="settings-option-grid" style="margin-top: 12px;">
-          <div id="font-tile-phone" class="settings-tile active" onclick="setAppFont('phone')">
-            <span style="font-size: 20px;">📱</span>
-            <div class="settings-tile-title">Adopt Phone Font</div>
-            <div class="settings-tile-sub">System Default (iOS / Android)</div>
-          </div>
-          <div id="font-tile-ios" class="settings-tile" onclick="setAppFont('ios')">
-            <span style="font-size: 20px;">🍎</span>
-            <div class="settings-tile-title">Apple SF Pro</div>
-            <div class="settings-tile-sub">iOS & macOS Native Typography</div>
-          </div>
-          <div id="font-tile-android" class="settings-tile" onclick="setAppFont('android')">
-            <span style="font-size: 20px;">🤖</span>
-            <div class="settings-tile-title">Android Roboto</div>
-            <div class="settings-tile-sub">Android & One UI System Font</div>
-          </div>
-          <div id="font-tile-sans" class="settings-tile" onclick="setAppFont('sans')">
-            <span style="font-size: 20px;">🔤</span>
-            <div class="settings-tile-title">Modern Sans</div>
-            <div class="settings-tile-sub">Plus Jakarta Sans</div>
-          </div>
-          <div id="font-tile-mono" class="settings-tile" onclick="setAppFont('mono')">
-            <span style="font-size: 20px;">💻</span>
-            <div class="settings-tile-title">Tech Mono</div>
-            <div class="settings-tile-sub">JetBrains Code Monospace</div>
-          </div>
-          <div id="font-tile-serif" class="settings-tile" onclick="setAppFont('serif')">
-            <span style="font-size: 20px;">📰</span>
-            <div class="settings-tile-title">Editorial Serif</div>
-            <div class="settings-tile-sub">Classic Georgia Serif</div>
-          </div>
+        <div class="settings-option-grid" id="settingsLanguageGrid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 14px;">
+          <!-- Dynamically populated via renderSettingsLanguageGrid() -->
         </div>
 
-        <!-- LIVE FONT & PALETTE PREVIEW BOX -->
-        <div style="margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--btn-secondary-bg); border: 1px solid var(--card-border);">
-          <div class="dim" style="margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Live Typography & Color Preview</div>
-          <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="fontPreviewSample">
-            COP 2,300,000 • Monthly Salary Allocation Buffer
+        <div style="margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--card-border);" class="space-between">
+          <div class="dim" style="font-size: 12px;">
+            🌐 Multi-language system automatically synchronizes labels across mobile and desktop views in real time.
           </div>
-          <div style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
-            The quick brown fox jumps over the lazy dog. 1 USD = 4,150.00 COP • 1 COP = 0.0312 KES.
-          </div>
+          <span class="badge green">● Live Translation Active</span>
         </div>
       </section>
 
-      <!-- 3. APP PERMISSIONS & HARDWARE ACCESS MANAGER -->
-      <section class="card" style="margin-bottom: 14px;">
+      <!-- 5. REGIONAL FORMATS & PAYDAY CYCLE -->
+      <section id="settings-sec-formats" class="card" style="margin-bottom: 14px;">
+        <h2>📅 Regional Formats & Payday Cycle</h2>
+        <p class="muted">Configure date formatting, decimal presentation, and your monthly payday disbursement schedule.</p>
+
+        <div class="grid-2" style="margin-top: 14px;">
+          
+          <!-- DATE FORMAT -->
+          <div class="card" style="margin-bottom: 0; background: var(--surface);">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Date Format</div>
+            <div style="font-weight: 700; margin-bottom: 8px;">Display Date Pattern</div>
+            <select id="selectDateFormat" style="width: 100%;" onchange="setDateFormat(this.value)">
+              <option value="YYYY-MM-DD">YYYY-MM-DD (ISO International - 2026-08-23)</option>
+              <option value="DD/MM/YYYY">DD/MM/YYYY (LatAm / Europe / Africa - 23/08/2026)</option>
+              <option value="MM/DD/YYYY">MM/DD/YYYY (US Standard - 08/23/2026)</option>
+            </select>
+          </div>
+
+          <!-- NUMBER FORMAT -->
+          <div class="card" style="margin-bottom: 0; background: var(--surface);">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Number Separator Style</div>
+            <div style="font-weight: 700; margin-bottom: 8px;">Grouping & Decimal</div>
+            <select id="selectNumberFormat" style="width: 100%;" onchange="setNumberFormat(this.value)">
+              <option value="standard">Standard: 1,000,000.00 (Comma thousand, dot decimal)</option>
+              <option value="european">European/LatAm: 1.000.000,00 (Dot thousand, comma decimal)</option>
+            </select>
+          </div>
+
+          <!-- PAYDAY CYCLE DAY -->
+          <div class="card" style="margin-bottom: 0; background: var(--surface);">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Payday Cycle Day</div>
+            <div style="font-weight: 700; margin-bottom: 8px;">Monthly Income Disbursement</div>
+            <select id="selectPaydayDay" style="width: 100%;" onchange="setPaydayDay(Number(this.value))">
+              <option value="25" selected>25th of the Month (Default GAP//FLOW Cycle)</option>
+              <option value="1">1st of the Month (Start of Month)</option>
+              <option value="15">15th of the Month (Mid-Month)</option>
+              <option value="28">28th of the Month (End of Month)</option>
+              <option value="30">30th/Last Day of Month</option>
+            </select>
+          </div>
+
+          <!-- SAVINGS BUFFER TARGET -->
+          <div class="card" style="margin-bottom: 0; background: var(--surface);">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Monthly Savings Target</div>
+            <div style="font-weight: 700; margin-bottom: 8px;">Minimum Savings Allocation</div>
+            <select id="selectSavingsGoalPercent" style="width: 100%;" onchange="setSavingsGoalPercent(Number(this.value))">
+              <option value="15">15% of Monthly Salary</option>
+              <option value="20">20% of Monthly Salary</option>
+              <option value="25" selected>25% of Monthly Salary</option>
+              <option value="30">30% of Monthly Salary</option>
+              <option value="40">40% Aggressive Wealth Accumulation</option>
+            </select>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 6. APP PERMISSIONS & HARDWARE ACCESS MANAGER -->
+      <section id="settings-sec-permissions" class="card" style="margin-bottom: 14px;">
         <div class="space-between" style="margin-bottom: 10px;">
           <div>
             <h2>🔒 App Permissions & Device Capabilities</h2>
@@ -2226,7 +2967,7 @@
                 <span style="font-size: 22px;">🔔</span>
                 <div>
                   <div style="font-weight: 700;">Browser Notifications</div>
-                  <div class="dim">Alerts for 25th salary cycle & thresholds</div>
+                  <div class="dim">Alerts for salary cycle & budget thresholds</div>
                 </div>
               </div>
               <span class="badge" id="permStatusNotification">Checking...</span>
@@ -2244,7 +2985,7 @@
                 <span style="font-size: 22px;">📍</span>
                 <div>
                   <div style="font-weight: 700;">Location & Proximity</div>
-                  <div class="dim">Auto-detects Colombia vs Kenya currency</div>
+                  <div class="dim">Auto-detects country & local currency</div>
                 </div>
               </div>
               <span class="badge" id="permStatusGeo">Ready</span>
@@ -2306,101 +3047,262 @@
           </div>
         </div>
 
-      </section>
-
-      <!-- 4. REMINDER SCHEDULES & ALERTS CONFIGURATION -->
-      <section class="card" style="margin-bottom: 14px;">
-        <h2>⏰ Reminder Schedules & Alert Rules</h2>
-        <p class="muted">Configure automated schedules to keep your monthly cashflow and budget goals on track.</p>
-        
-        <div class="grid-2" style="margin-top: 12px;">
-          
-          <!-- 25TH CYCLE REMINDER -->
-          <div class="card" style="margin-bottom: 0; background: var(--surface);">
-            <div class="space-between">
-              <div>
-                <b>25th Salary Cycle Reminders</b>
-                <div class="dim">Reminds on the 25th to disburse income</div>
-              </div>
-              <input type="checkbox" id="checkSalaryReminder" checked onchange="updateReminderSetting('salaryCycleEnabled', this.checked)">
-            </div>
-          </div>
-
-          <!-- DAILY BUDGET CHECKIN -->
-          <div class="card" style="margin-bottom: 0; background: var(--surface);">
-            <div class="space-between">
-              <div>
-                <b>Daily Budget Check-in</b>
-                <div class="dim">Daily prompt to log cash/card spending</div>
-              </div>
-              <div class="row">
-                <input type="time" id="inputDailyCheckinTime" value="20:00" style="padding: 4px 8px; font-size: 12px;" onchange="updateReminderSetting('dailyCheckinTime', this.value)">
-                <input type="checkbox" id="checkDailyCheckin" checked onchange="updateReminderSetting('dailyCheckinEnabled', this.checked)">
+        <!-- REMINDER SCHEDULES & ALERTS -->
+        <div style="margin-top: 16px;">
+          <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Automated Alert Schedules</div>
+          <div class="grid-2">
+            
+            <div class="card" style="margin-bottom: 0; background: var(--surface);">
+              <div class="space-between">
+                <div>
+                  <b>Payday Cycle Reminders</b>
+                  <div class="dim">Reminds on disbursement day</div>
+                </div>
+                <input type="checkbox" id="checkSalaryReminder" checked onchange="updateReminderSetting('salaryCycleEnabled', this.checked)">
               </div>
             </div>
-          </div>
 
-          <!-- HIGH EXPENSE THRESHOLD -->
-          <div class="card" style="margin-bottom: 0; background: var(--surface);">
-            <div class="space-between">
-              <div>
-                <b>Category Threshold Warning</b>
-                <div class="dim">Alerts when spending approaches limit</div>
+            <div class="card" style="margin-bottom: 0; background: var(--surface);">
+              <div class="space-between">
+                <div>
+                  <b>Daily Budget Check-in</b>
+                  <div class="dim">Daily prompt to log spending</div>
+                </div>
+                <div class="row">
+                  <input type="time" id="inputDailyCheckinTime" value="20:00" style="padding: 4px 8px; font-size: 12px;" onchange="updateReminderSetting('dailyCheckinTime', this.value)">
+                  <input type="checkbox" id="checkDailyCheckin" checked onchange="updateReminderSetting('dailyCheckinEnabled', this.checked)">
+                </div>
               </div>
-              <select id="selectThresholdLimit" style="padding: 4px 8px; font-size: 12px;" onchange="updateReminderSetting('thresholdLimitPercent', Number(this.value))">
-                <option value="75">75% of Budget</option>
-                <option value="85" selected>85% of Budget</option>
-                <option value="90">90% of Budget</option>
-                <option value="100">100% (Strict)</option>
-              </select>
             </div>
-          </div>
 
-          <!-- VOLATILITY ALERT -->
-          <div class="card" style="margin-bottom: 0; background: var(--surface);">
-            <div class="space-between">
-              <div>
-                <b>Currency Fluctuation Alerts</b>
-                <div class="dim">Alerts on major COP/KES rate moves</div>
+            <div class="card" style="margin-bottom: 0; background: var(--surface);">
+              <div class="space-between">
+                <div>
+                  <b>Category Threshold Warning</b>
+                  <div class="dim">Alerts when spending approaches limit</div>
+                </div>
+                <select id="selectThresholdLimit" style="padding: 4px 8px; font-size: 12px;" onchange="updateReminderSetting('thresholdLimitPercent', Number(this.value))">
+                  <option value="75">75% of Budget</option>
+                  <option value="85" selected>85% of Budget</option>
+                  <option value="90">90% of Budget</option>
+                  <option value="100">100% (Strict)</option>
+                </select>
               </div>
-              <input type="checkbox" id="checkForexAlerts" checked onchange="updateReminderSetting('forexAlertsEnabled', this.checked)">
             </div>
-          </div>
 
+            <div class="card" style="margin-bottom: 0; background: var(--surface);">
+              <div class="space-between">
+                <div>
+                  <b>Currency Fluctuation Alerts</b>
+                  <div class="dim">Alerts on major exchange rate moves</div>
+                </div>
+                <input type="checkbox" id="checkForexAlerts" checked onchange="updateReminderSetting('forexAlertsEnabled', this.checked)">
+              </div>
+            </div>
+
+          </div>
         </div>
+
       </section>
 
-      <!-- 5. BACKUP & DANGER ZONE -->
-      <div class="grid-2">
+      <!-- 7. BACKUP, EXPORT & DANGER ZONE -->
+      <section id="settings-sec-data" class="grid-2">
         
-        <!-- BACKUP & EXPORT -->
-        <section class="card">
-          <h2>💾 Data Backup & Restore</h2>
-          <p class="muted">Your financial logs and settings are stored locally on your device. Export a JSON backup to transfer data seamlessly.</p>
+        <!-- BACKUP & CSV EXPORT -->
+        <div class="card">
+          <h2>💾 Data Backup & Ledger Export</h2>
+          <p class="muted">Your financial logs, rules, and settings are stored locally on your device. Export backups or download your expense spreadsheet.</p>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
             <button class="primary sm" onclick="downloadJsonBackup()">📥 Download Complete Backup (.json)</button>
+            <button class="secondary sm" onclick="exportExpensesToCsv()">📊 Export Expense Ledger to CSV Spreadsheet</button>
             <div class="row">
               <input type="file" id="importJsonInput" accept=".json" style="display: none;" onchange="handleImportJson(event)">
               <button class="secondary sm grow" onclick="document.getElementById('importJsonInput').click()">📤 Restore from Backup (.json)</button>
             </div>
           </div>
-        </section>
+        </div>
 
         <!-- DANGER ZONE -->
-        <section class="card">
+        <div class="card">
           <h2 class="red">⚠️ Reset & System Controls</h2>
-          <p class="muted">Reset local records or clear stored history.</p>
+          <p class="muted">Reset category allocation rules or wipe local records.</p>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
             <button class="secondary sm" onclick="resetToDefaults()">↺ Reset Allocation Rules to Default</button>
             <button class="sm" style="border-color: var(--red-border); color: var(--red); background: var(--red-bg);" onclick="confirmPurgeAllData()">⚠️ Clear All Data & Reset Everything</button>
           </div>
-        </section>
+        </div>
 
-      </div>
+      </section>
 
-      <section class="card" style="margin-top: 14px;">
-        <h2>ℹ️ About GAP//FLOW Money Command Center</h2>
-        <p>Version 3.5.0 • Colombia ⇄ Kenya financial command center. Features real-time multi-currency exchange rates, intelligent Google Gemini financial advisor, responsive mobile UI, customizable light/monochrome/warm/dark modes, app permissions hub, and functional reminder engines.</p>
+      <!-- 7. ACCOUNT & WORKSPACE MANAGEMENT -->
+      <section id="settings-sec-account" class="card" style="margin-top: 14px;">
+        <div class="space-between">
+          <div>
+            <h2>👤 Account, Profile & Multi-Workspace</h2>
+            <p>Manage your active user profile, switch between multiple accounts or add a new workspace, and securely log out.</p>
+          </div>
+          <span class="badge green" id="settingsActivePlanBadge">Pro Enterprise</span>
+        </div>
+
+        <!-- CURRENT ACTIVE PROFILE CARD -->
+        <div class="card" style="margin-top: 14px; background: var(--surface); border: 1.5px solid var(--card-border);">
+          <div class="space-between">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="settingsUserAvatarLarge" style="width: 46px; height: 46px; border-radius: 50%; background: var(--cyan-light); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold;">
+                🍏
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 15px;" id="settingsUserNameLarge">Brian Gathecere</div>
+                <div class="muted" style="font-size: 12px;" id="settingsUserEmailLarge">bgathecere2@gmail.com</div>
+                <div class="dim" style="font-size: 11px; margin-top: 2px;" id="settingsUserMetaLarge">Signed in via Apple ID • Member since Aug 2026</div>
+              </div>
+            </div>
+            <button class="secondary sm" style="border-color: var(--red-border); color: var(--red);" onclick="logOutUser()">
+              🚪 Log Out
+            </button>
+          </div>
+        </div>
+
+        <!-- MULTI-ACCOUNT LIST & SWITCHER -->
+        <div style="margin-top: 16px;">
+          <div class="space-between" style="margin-bottom: 8px;">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; font-size: 12px; font-weight: 700;">Configured Accounts & Workspaces</div>
+            <button class="primary sm" onclick="openAddAccountDialog()">＋ Add Account</button>
+          </div>
+          <div id="settingsAccountsListContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. RATE THE APP -->
+      <section id="settings-sec-rating" class="card" style="margin-top: 14px;">
+        <div class="space-between">
+          <div>
+            <h2>⭐ Rate & Review GAP//FLOW</h2>
+            <p>How has your cross-border money management experience been? Your rating shapes upcoming releases.</p>
+          </div>
+          <span class="badge amber" id="settingsRatingBadge">5.0 ★ Top Rated</span>
+        </div>
+
+        <div class="card" style="margin-top: 14px; background: var(--surface); text-align: center; padding: 22px 16px;">
+          <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Tap a star to rate GAP//FLOW:</div>
+          <div class="star-rating-row" style="justify-content: center;" id="settingsStarRatingRow">
+            <button class="star-btn active" data-val="1" onclick="setAppRatingScore(1)">★</button>
+            <button class="star-btn active" data-val="2" onclick="setAppRatingScore(2)">★</button>
+            <button class="star-btn active" data-val="3" onclick="setAppRatingScore(3)">★</button>
+            <button class="star-btn active" data-val="4" onclick="setAppRatingScore(4)">★</button>
+            <button class="star-btn active" data-val="5" onclick="setAppRatingScore(5)">★</button>
+          </div>
+          <div id="settingsRatingScoreText" style="font-weight: 700; color: var(--amber); margin-bottom: 12px;">5/5 — Outstanding & Essential!</div>
+
+          <div style="max-width: 480px; margin: 0 auto; text-align: left;">
+            <label class="dim" style="font-size: 12px;">Optional Review Comment:</label>
+            <textarea id="settingsRatingCommentInput" rows="2" style="width: 100%; margin-top: 4px;" placeholder="What do you love most about GAP//FLOW? (e.g. Dual-currency FX, salary rules, PDF budget extraction...)"></textarea>
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+              <button class="primary sm" onclick="submitAppRatingAction()">⭐ Save & Submit Rating</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. SEND FEEDBACK -->
+      <section id="settings-sec-feedback" class="card" style="margin-top: 14px;">
+        <div class="space-between">
+          <div>
+            <h2>💬 Send Direct Feedback & Feature Requests</h2>
+            <p>Direct pipeline to the GAP//FLOW engineering team. We review every feature request, usability tip, and bug report.</p>
+          </div>
+          <span class="badge cyan">Priority Channel</span>
+        </div>
+
+        <div class="card" style="margin-top: 14px; background: var(--surface);">
+          <div class="grid-2" style="margin-bottom: 10px;">
+            <div>
+              <label class="dim" style="font-size: 12px;">Feedback Category</label>
+              <select id="settingsFeedbackCategory" style="margin-top: 4px;">
+                <option value="feature">💡 Feature Request / Idea</option>
+                <option value="currency">💱 New Currency / Country Support</option>
+                <option value="bug">🐛 Bug or Calculation Issue</option>
+                <option value="ui">🎨 UI & Usability Feedback</option>
+                <option value="praise">❤️ Compliment / Praise</option>
+              </select>
+            </div>
+            <div>
+              <label class="dim" style="font-size: 12px;">Your Contact Email (Optional)</label>
+              <input type="email" id="settingsFeedbackEmail" style="margin-top: 4px;" placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div>
+            <label class="dim" style="font-size: 12px;">Feedback Message / Details</label>
+            <textarea id="settingsFeedbackMessage" rows="3" style="width: 100%; margin-top: 4px;" placeholder="Describe what you'd like to see improved or added to GAP//FLOW..."></textarea>
+          </div>
+
+          <div class="space-between" style="margin-top: 12px;">
+            <div class="dim" style="font-size: 11px;">🔒 Feedback is processed securely and encrypted client-side.</div>
+            <button class="primary sm" onclick="submitAppFeedbackAction()">
+              <span>🚀 Submit Feedback</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. VERSION & ABOUT STUDIO -->
+      <section id="settings-sec-about" class="card" style="margin-top: 14px;">
+        <div class="space-between">
+          <div>
+            <h2>ℹ️ Version, System & About GAP//FLOW</h2>
+            <p>App release specifications, core platform capabilities, live client diagnostics, and cross-border architecture principles.</p>
+          </div>
+          <span class="badge cyan">v3.6.0 Pro Enterprise</span>
+        </div>
+
+        <div class="grid-2" style="margin-top: 14px;">
+          
+          <!-- VERSION & PLATFORM SPECS -->
+          <div class="card" style="margin-bottom: 0; background: var(--surface);">
+            <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">App Version & Runtime</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <b>GAP//FLOW Money Command Center</b>
+              <span class="badge green">● Production Ready</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+              <div>• <b>Version:</b> 3.6.0 (Build 2026.08.23)</div>
+              <div>• <b>Architecture:</b> Single-Page Application + Node.js Proxy</div>
+              <div>• <b>Intelligence:</b> Google Gemini AI Advisor Engine</div>
+              <div>• <b>Persistence:</b> Encrypted Client-Side Key-Value State</div>
+              <div>• <b>Audio Engine:</b> Web Audio API Chime Synthesizer</div>
+              <div>• <b>Forex Coverage:</b> 50+ Real-Time Global Currencies</div>
+            </div>
+          </div>
+
+          <!-- SYSTEM DIAGNOSTICS & CLIENT INFO -->
+          <div class="card" style="margin-bottom: 0; background: var(--surface);">
+            <div class="space-between" style="margin-bottom: 6px;">
+              <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em;">Client Diagnostics & Device</div>
+              <button class="secondary sm" style="padding: 2px 6px; font-size: 11px;" onclick="renderSystemDiagnostics()">🔄 Refresh</button>
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 5px;">
+              <div>• <b>Status:</b> <span id="diagConnection">Checking...</span></div>
+              <div>• <b>Screen Resolution:</b> <span id="diagScreen">Checking...</span></div>
+              <div>• <b>Storage Usage:</b> <span id="diagStorage">Checking...</span></div>
+              <div>• <b>Theme & Typography:</b> <span id="diagThemeMeta">Clean Grey & White • Phone Font</span></div>
+              <div style="word-break: break-all; font-size: 11px; opacity: 0.75; margin-top: 4px;">
+                <b>Agent:</b> <span id="diagUserAgent">Browser Client</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ABOUT & PRIVACY GUARANTEE -->
+        <div style="margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--card-border);">
+          <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">🔐 100% Client-Side Privacy Guarantee & Cross-Border Philosophy</div>
+          <p class="muted" style="margin-bottom: 0;">
+            GAP//FLOW is engineered specifically for individuals, nomads, and teams managing dual-currency cashflow across borders (Colombia 🇨🇴, Kenya 🇰🇪, US 🇺🇸, EU 🇪🇺, and global destinations). Your ledger entries, category distributions, and receipts are processed client-side with complete privacy. No personal financial records are sold, monitored, or transmitted to third-party ad networks.
+          </p>
+        </div>
       </section>
 
     </div>
@@ -2483,11 +3385,510 @@
       <svg viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/></svg>
       <span>AI</span>
     </button>
+    <button id="m-nav-settings" class="m-tab" onclick="switchPage('settings')">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      <span>Settings</span>
+    </button>
   </nav>
 
   <!-- ======================================================== -->
-  <!-- MODAL CONTAINER -->
+  <!-- 0. LANDING & SIGN-IN PAGE (FOR AUTHENTICATION) -->
   <!-- ======================================================== -->
+  <div id="landingPageContainer" class="landing-container hide">
+    
+    <!-- LANDING HEADER -->
+    <header class="landing-header">
+      <div class="landing-header-inner">
+        <div class="brand-group" style="cursor: default;">
+          <div class="brand-logo">G//F</div>
+          <div>
+            <div class="brand-name">GAP<span>//</span>FLOW</div>
+            <div class="brand-sub">Cross-Border Financial Command</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <!-- Landing Language Selector -->
+          <select id="landingLangSelect" style="padding: 5px 10px; font-size: 12px; border-radius: 99px;" onchange="setAppLanguage(this.value)">
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇨🇴 Español</option>
+            <option value="sw">🇰🇪 Kiswahili</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="pt">🇧🇷 Português</option>
+          </select>
+          <button class="theme-toggle-btn" onclick="toggleThemeMode()" title="Switch Light/Dark Mode">
+            <span id="landingThemeIcon">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- LANDING HERO & AUTH SECTION -->
+    <div class="landing-hero-grid">
+      
+      <!-- HERO VALUE PROPOSITION -->
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span class="badge cyan">🇨🇴 Colombia ⇄ 🇰🇪 Kenya • Global FX</span>
+          <span class="badge green">● v3.6.0 Pro</span>
+        </div>
+
+        <h1 style="font-size: clamp(28px, 4vw, 42px); line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px;">
+          Master Dual-Currency Cashflow Across Borders
+        </h1>
+
+        <p style="font-size: 16px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; max-width: 540px;">
+          Intelligent monthly salary auto-distribution, real-time dual currency converter (COP, KES, USD, EUR), and Google Gemini AI financial advisor. 100% private, client-side, and phone-native.
+        </p>
+
+        <!-- VALUE PILLS -->
+        <div class="grid-2" style="gap: 12px; margin-bottom: 24px;">
+          <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+            <div style="font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+              <span>💱</span> Dual-Currency Forex
+            </div>
+            <div class="dim" style="font-size: 11px; margin-top: 2px;">50+ global currencies updated live with instant conversion</div>
+          </div>
+          <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+            <div style="font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+              <span>📊</span> Smart Salary Splits
+            </div>
+            <div class="dim" style="font-size: 11px; margin-top: 2px;">Auto-allocates living, equipment, emergency & home funds</div>
+          </div>
+          <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+            <div style="font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+              <span>✨</span> Gemini AI Strategist
+            </div>
+            <div class="dim" style="font-size: 11px; margin-top: 2px;">Real-time affordability checks, PDF budget parsing & insights</div>
+          </div>
+          <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+            <div style="font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+              <span>🔒</span> 100% Client Privacy
+            </div>
+            <div class="dim" style="font-size: 11px; margin-top: 2px;">Encrypted local vault. No personal data sold or tracked</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <button class="secondary" style="border-radius: 99px; padding: 8px 16px; font-size: 13px;" onclick="signInAsGuest()">
+            <span>⚡ Instant Demo Mode (No signup required)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AUTHENTICATION CARD -->
+      <div class="landing-auth-card">
+        
+        <!-- AUTH TABS -->
+        <div class="auth-tabs" role="tablist">
+          <button id="authTabSignIn" class="auth-tab-btn active" onclick="toggleAuthFormMode('signin')">
+            Sign In
+          </button>
+          <button id="authTabSignUp" class="auth-tab-btn" onclick="toggleAuthFormMode('signup')">
+            Create Account
+          </button>
+        </div>
+
+        <!-- 1. SIGN IN WITH APPLE -->
+        <button class="apple-btn" onclick="triggerAppleSignIn()">
+          <svg class="apple-icon-svg" viewBox="0 0 170 170">
+            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.74 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.03-7.61-7.79-11.73-14.28-5.75-9.08-10.27-19.67-13.56-31.77-3.29-12.1-4.94-23.3-4.94-33.6 0-14.28 3.69-26.01 11.06-35.18 7.37-9.17 16.5-13.88 27.38-14.13 4.8 0 10.15 1.24 16.08 3.71 5.92 2.47 9.77 3.77 11.55 3.89 1.45 0 5.48-1.42 12.08-4.26 6.59-2.84 12.13-4.04 16.6-3.59 12.44 1.04 22.25 5.83 29.43 14.37-10.88 6.59-16.2 15.65-15.96 27.18.24 9.08 3.7 16.79 10.39 23.13 6.69 6.34 14.68 9.97 23.97 10.89-2.45 7.42-5.59 15.08-9.43 22.98zM119.22 33.15c0-7.23 2.65-13.97 7.95-20.21 5.3-6.24 11.83-9.87 19.59-10.89.56 1.7.84 3.42.84 5.16 0 7.37-2.73 14.33-8.2 20.89-5.46 6.55-12.13 10.27-20.01 11.16-.09-2.03-.17-4.07-.17-6.11z"/>
+          </svg>
+          <span id="appleAuthButtonText">Sign in with Apple</span>
+        </button>
+
+        <div class="auth-divider">
+          <span>or continue with email</span>
+        </div>
+
+        <!-- 2. EMAIL SIGN IN FORM -->
+        <form id="landingAuthForm" onsubmit="event.preventDefault(); handleAuthFormSubmit();">
+          
+          <!-- NAME (SIGN UP ONLY) -->
+          <div id="authFieldName" class="hide" style="margin-bottom: 12px;">
+            <label class="dim" style="font-size: 12px;">Full Name</label>
+            <input type="text" id="authInputName" placeholder="Brian Gathecere" style="margin-top: 4px;">
+          </div>
+
+          <!-- EMAIL -->
+          <div style="margin-bottom: 12px;">
+            <label class="dim" style="font-size: 12px;">Email Address</label>
+            <input type="email" id="authInputEmail" required placeholder="bgathecere2@gmail.com" value="bgathecere2@gmail.com" style="margin-top: 4px;">
+          </div>
+
+          <!-- PASSWORD -->
+          <div style="margin-bottom: 12px;">
+            <div class="space-between">
+              <label class="dim" style="font-size: 12px;">Password</label>
+              <a href="javascript:void(0)" onclick="simulateForgotPassword()" style="font-size: 11px; color: var(--cyan);">Forgot?</a>
+            </div>
+            <input type="password" id="authInputPassword" required placeholder="••••••••••••" value="password123" style="margin-top: 4px;">
+          </div>
+
+          <!-- REGION / CURRENCY (SIGN UP ONLY) -->
+          <div id="authFieldRegion" class="hide" style="margin-bottom: 12px;">
+            <label class="dim" style="font-size: 12px;">Preferred Base Currency</label>
+            <select id="authInputCurrency" style="margin-top: 4px;">
+              <option value="COP">🇨🇴 Colombian Peso (COP)</option>
+              <option value="KES">🇰🇪 Kenyan Shilling (KES)</option>
+              <option value="USD">🇺🇸 US Dollar (USD)</option>
+              <option value="EUR">🇪🇺 Euro (EUR)</option>
+              <option value="GBP">🇬🇧 British Pound (GBP)</option>
+              <option value="CAD">🇨🇦 Canadian Dollar (CAD)</option>
+            </select>
+          </div>
+
+          <!-- REMEMBER ME CHECKBOX -->
+          <div class="row" style="margin-bottom: 16px; font-size: 12px; color: var(--text-muted);">
+            <input type="checkbox" id="authRememberMe" checked style="width: auto;">
+            <label for="authRememberMe" style="cursor: pointer;">Remember this device</label>
+          </div>
+
+          <!-- SUBMIT BUTTON -->
+          <button type="submit" class="primary" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700;" id="authSubmitButton">
+            Sign In to GAP//FLOW
+          </button>
+        </form>
+
+        <!-- PRIVACY NOTE -->
+        <div style="margin-top: 16px; text-align: center; font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+          Protected by GAP//FLOW Encrypted Vault. By continuing, you agree to our 100% Client-Side Privacy Policy.
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- DEDICATED SETTINGS WINDOW MODAL -->
+  <!-- ======================================================== -->
+  <div id="settingsWindowModal" class="modal hide">
+    <div class="settings-window-dialog">
+      
+      <!-- WINDOW HEADER -->
+      <div class="settings-window-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="font-size: 20px;">⚙️</div>
+          <div>
+            <div style="font-weight: 800; font-size: 15px;">GAP//FLOW Settings Window</div>
+            <div class="dim" style="font-size: 11px;">Language, Currency, Permissions, Accounts & Feedback</div>
+          </div>
+        </div>
+        <button class="secondary sm" onclick="closeSettingsWindow()">✕ Close</button>
+      </div>
+
+      <!-- WINDOW BODY (SIDEBAR + CONTENT) -->
+      <div class="settings-window-body">
+        
+        <!-- SIDEBAR NAVIGATION TABS -->
+        <div class="settings-window-sidebar" role="tablist">
+          <button class="win-tab-btn active" id="winTabBtn-account" onclick="switchSettingsWinTab('account')">
+            <span>👤</span> <span>Account & Workspaces</span>
+          </button>
+          <button class="win-tab-btn" id="winTabBtn-language" onclick="switchSettingsWinTab('language')">
+            <span>🗣️</span> <span>Language (i18n)</span>
+          </button>
+          <button class="win-tab-btn" id="winTabBtn-currency" onclick="switchSettingsWinTab('currency')">
+            <span>💱</span> <span>Base Currency & FX</span>
+          </button>
+          <button class="win-tab-btn" id="winTabBtn-permissions" onclick="switchSettingsWinTab('permissions')">
+            <span>🔒</span> <span>App Permissions</span>
+          </button>
+          <button class="win-tab-btn" id="winTabBtn-rating" onclick="switchSettingsWinTab('rating')">
+            <span>⭐</span> <span>Rate the App</span>
+          </button>
+          <button class="win-tab-btn" id="winTabBtn-feedback" onclick="switchSettingsWinTab('feedback')">
+            <span>💬</span> <span>Send Feedback</span>
+          </button>
+          <button class="win-tab-btn" id="winTabBtn-about" onclick="switchSettingsWinTab('about')">
+            <span>ℹ️</span> <span>Version & About</span>
+          </button>
+        </div>
+
+        <!-- CONTENT PANELS -->
+        <div class="settings-window-content">
+          
+          <!-- 1. ACCOUNT TAB -->
+          <div id="winPanel-account" class="win-panel">
+            <div class="space-between" style="margin-bottom: 12px;">
+              <div>
+                <h3 style="margin-bottom: 2px;">Active Account & Multi-Workspace</h3>
+                <p class="muted" style="margin-bottom: 0;">Manage your session, switch between personal and business accounts, or log out.</p>
+              </div>
+              <span class="badge green" id="winAccountPlanBadge">Pro Enterprise</span>
+            </div>
+
+            <!-- ACTIVE PROFILE CARD -->
+            <div class="card" style="background: var(--surface); padding: 14px; margin-bottom: 14px;">
+              <div class="space-between">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div id="winAccountAvatar" style="width: 44px; height: 44px; border-radius: 50%; background: var(--cyan-light); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold;">
+                    🍏
+                  </div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px;" id="winAccountName">Brian Gathecere</div>
+                    <div class="muted" style="font-size: 12px;" id="winAccountEmail">bgathecere2@gmail.com</div>
+                    <div class="dim" style="font-size: 11px;" id="winAccountProvider">Signed in with Apple ID</div>
+                  </div>
+                </div>
+                <button class="secondary sm" style="border-color: var(--red-border); color: var(--red);" onclick="logOutUser()">
+                  🚪 Log Out
+                </button>
+              </div>
+            </div>
+
+            <!-- ACCOUNTS LIST -->
+            <div style="margin-top: 14px;">
+              <div class="space-between" style="margin-bottom: 8px;">
+                <div class="dim" style="text-transform: uppercase; font-size: 11px; font-weight: 700;">Configured Profiles</div>
+                <button class="primary sm" style="font-size: 11px; padding: 3px 8px;" onclick="openAddAccountDialog()">＋ Add Account</button>
+              </div>
+              <div id="winAccountsListContainer">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. LANGUAGE TAB -->
+          <div id="winPanel-language" class="win-panel hide">
+            <h3 style="margin-bottom: 2px;">Change Application Language</h3>
+            <p class="muted" style="margin-bottom: 12px;">Instant UI translation across English, Español, Kiswahili, Français, Deutsch, and Português.</p>
+            <div id="winLangGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 3. CURRENCY TAB -->
+          <div id="winPanel-currency" class="win-panel hide">
+            <div class="space-between" style="margin-bottom: 4px;">
+              <h3 style="margin-bottom: 0;">Change App Base Currency</h3>
+              <button class="secondary sm" style="padding: 2px 8px; font-size: 11px;" onclick="loadLiveForexRates(true)">🔄 Refresh FX</button>
+            </div>
+            <p class="muted" style="margin-bottom: 12px;">Switching your base currency instantly recalculates your salary, allocations, and live expense ledger.</p>
+            <div id="winCurGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 4. PERMISSIONS TAB -->
+          <div id="winPanel-permissions" class="win-panel hide">
+            <h3 style="margin-bottom: 2px;">App Hardware & Browser Permissions</h3>
+            <p class="muted" style="margin-bottom: 12px;">Manage browser permissions required for full automated command center features.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- NOTIFICATIONS -->
+              <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+                <div class="space-between">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 22px;">🔔</span>
+                    <div>
+                      <div style="font-weight: 700; font-size: 13px;">Push & In-App Notifications</div>
+                      <div class="dim" style="font-size: 11px;">Salary payday cycle alerts & spending limit reminders</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge" id="winPermNoticeBadge">Checking...</span>
+                    <button class="primary sm" style="font-size: 11px; padding: 4px 8px;" onclick="requestNotificationPermission()">Grant / Test</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GEOLOCATION -->
+              <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+                <div class="space-between">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 22px;">📍</span>
+                    <div>
+                      <div style="font-weight: 700; font-size: 13px;">Geolocation Currency Detection</div>
+                      <div class="dim" style="font-size: 11px;">Auto-suggests local base currency when traveling across borders</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge" id="winPermGeoBadge">Checking...</span>
+                    <button class="primary sm" style="font-size: 11px; padding: 4px 8px;" onclick="detectUserLocationCurrency()">Detect Now</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CAMERA -->
+              <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+                <div class="space-between">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 22px;">📷</span>
+                    <div>
+                      <div style="font-weight: 700; font-size: 13px;">Camera Receipt Scanner</div>
+                      <div class="dim" style="font-size: 11px;">Scan physical receipts & invoice totals with optical capture</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge" id="winPermCameraBadge">Checking...</span>
+                    <button class="primary sm" style="font-size: 11px; padding: 4px 8px;" onclick="closeSettingsWindow(); openCameraReceiptScanner();">Open Camera</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STORAGE -->
+              <div class="card" style="margin: 0; background: var(--surface); padding: 12px 14px;">
+                <div class="space-between">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 22px;">💾</span>
+                    <div>
+                      <div style="font-weight: 700; font-size: 13px;">Encrypted Local Vault Storage</div>
+                      <div class="dim" style="font-size: 11px;">Persistent offline ledger without cloud tracking</div>
+                    </div>
+                  </div>
+                  <span class="badge green">● Active & Secure</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 5. RATING TAB -->
+          <div id="winPanel-rating" class="win-panel hide">
+            <h3 style="margin-bottom: 2px;">Rate & Review GAP//FLOW</h3>
+            <p class="muted" style="margin-bottom: 14px;">Tell us about your experience managing cross-border finances.</p>
+
+            <div class="card" style="background: var(--surface); text-align: center; padding: 20px 14px;">
+              <div class="dim" style="font-size: 13px; font-weight: 600;">Your Rating Score:</div>
+              <div class="star-rating-row" style="justify-content: center;" id="winStarRatingRow">
+                <button class="star-btn active" data-val="1" onclick="setAppRatingScore(1)">★</button>
+                <button class="star-btn active" data-val="2" onclick="setAppRatingScore(2)">★</button>
+                <button class="star-btn active" data-val="3" onclick="setAppRatingScore(3)">★</button>
+                <button class="star-btn active" data-val="4" onclick="setAppRatingScore(4)">★</button>
+                <button class="star-btn active" data-val="5" onclick="setAppRatingScore(5)">★</button>
+              </div>
+              <div id="winRatingScoreText" style="font-weight: 700; color: var(--amber); margin-bottom: 12px;">5/5 — Outstanding & Essential!</div>
+
+              <div style="text-align: left;">
+                <label class="dim" style="font-size: 12px;">Review Comments (Optional):</label>
+                <textarea id="winRatingCommentInput" rows="2" style="width: 100%; margin-top: 4px;" placeholder="Share your favorite features or experience..."></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                  <button class="primary sm" onclick="submitAppRatingAction()">⭐ Submit Rating</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. FEEDBACK TAB -->
+          <div id="winPanel-feedback" class="win-panel hide">
+            <h3 style="margin-bottom: 2px;">Send Direct Feedback</h3>
+            <p class="muted" style="margin-bottom: 12px;">Submit feature requests, report calculation bugs, or request new currency pairs.</p>
+
+            <div class="card" style="background: var(--surface); padding: 14px;">
+              <div class="grid-2" style="margin-bottom: 10px;">
+                <div>
+                  <label class="dim" style="font-size: 12px;">Category</label>
+                  <select id="winFeedbackCategory" style="margin-top: 4px;">
+                    <option value="feature">💡 Feature Request</option>
+                    <option value="currency">💱 New Currency / Country Pair</option>
+                    <option value="bug">🐛 Bug Report</option>
+                    <option value="ui">🎨 Usability & UI</option>
+                    <option value="praise">❤️ Compliment</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="dim" style="font-size: 12px;">Your Email (Optional)</label>
+                  <input type="email" id="winFeedbackEmail" style="margin-top: 4px;" placeholder="name@example.com">
+                </div>
+              </div>
+
+              <div>
+                <label class="dim" style="font-size: 12px;">Feedback Message</label>
+                <textarea id="winFeedbackMessage" rows="3" style="width: 100%; margin-top: 4px;" placeholder="Write your thoughts, suggestions, or bug description here..."></textarea>
+              </div>
+
+              <div class="space-between" style="margin-top: 12px;">
+                <div class="dim" style="font-size: 11px;">🚀 Sent directly to engineering.</div>
+                <button class="primary sm" onclick="submitAppFeedbackAction()">
+                  Submit Feedback
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. ABOUT TAB -->
+          <div id="winPanel-about" class="win-panel hide">
+            <div class="space-between" style="margin-bottom: 6px;">
+              <h3 style="margin-bottom: 0;">About GAP//FLOW</h3>
+              <span class="badge cyan">v3.6.0 Pro Enterprise</span>
+            </div>
+            <p class="muted" style="margin-bottom: 12px;">Cross-border financial command center with real-time multi-currency intelligence.</p>
+
+            <div class="card" style="background: var(--surface); padding: 12px 14px; margin-bottom: 10px;">
+              <div style="font-size: 13px; display: flex; flex-direction: column; gap: 4px; color: var(--text-muted);">
+                <div>• <b>Version:</b> 3.6.0 (Build 2026.08.23)</div>
+                <div>• <b>Platform:</b> Single-Page Application (SPA) + Express Proxy</div>
+                <div>• <b>Forex Coverage:</b> 50+ Global Currencies with Live FX</div>
+                <div>• <b>AI Core:</b> Google Gemini Financial Intelligence</div>
+                <div>• <b>Audio Synthesizer:</b> Web Audio API Chimes</div>
+                <div>• <b>Privacy:</b> 100% Client-Side Local State Encryption</div>
+              </div>
+            </div>
+
+            <div class="card" style="background: var(--surface); padding: 12px 14px;">
+              <div class="space-between" style="margin-bottom: 4px;">
+                <div class="dim" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">Client Diagnostics</div>
+                <button class="secondary sm" style="font-size: 10px; padding: 2px 6px;" onclick="renderSystemDiagnostics()">Refresh</button>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px;">
+                <div>• <b>Status:</b> <span id="winDiagConnection">Online (Connected)</span></div>
+                <div>• <b>Resolution:</b> <span id="winDiagScreen">Checking...</span></div>
+                <div>• <b>Storage:</b> <span id="winDiagStorage">Active Vault</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- ADD ACCOUNT MODAL -->
+  <!-- ======================================================== -->
+  <div id="addAccountModal" class="modal hide">
+    <div class="modal-dialog">
+      <div class="space-between" style="margin-bottom: 10px;">
+        <h2>👤 Add New Account / Workspace</h2>
+        <button class="secondary sm" onclick="closeAddAccountDialog()">✕ Close</button>
+      </div>
+      <p class="muted">Add a secondary workspace (e.g. Travel, Business, or another family member) to toggle between ledgers easily.</p>
+      
+      <form onsubmit="event.preventDefault(); handleAddNewAccountSubmit();">
+        <div style="margin-bottom: 12px;">
+          <label class="dim" style="font-size: 12px;">Workspace / Account Name</label>
+          <input type="text" id="addAccInputName" required placeholder="e.g. Travel & Nomad, Business LLC" style="margin-top: 4px;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label class="dim" style="font-size: 12px;">Email Address</label>
+          <input type="email" id="addAccInputEmail" required placeholder="user@domain.com" style="margin-top: 4px;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label class="dim" style="font-size: 12px;">Sign-in Provider Type</label>
+          <select id="addAccInputProvider" style="margin-top: 4px;">
+            <option value="email">✉️ Email Workspace</option>
+            <option value="apple">🍏 Apple ID Account</option>
+            <option value="guest">⚡ Demo / Guest Profile</option>
+          </select>
+        </div>
+
+        <div class="space-between">
+          <button type="button" class="secondary" onclick="closeAddAccountDialog()">Cancel</button>
+          <button type="submit" class="primary">＋ Add & Switch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- GENERIC APP DIALOG MODAL -->
   <div id="appModal" class="modal hide">
     <div class="modal-dialog">
       <h2 id="modalDialogTitle" style="margin-bottom: 12px;"></h2>
@@ -2529,13 +3930,317 @@
       { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳' },
       { code: 'ZAR', name: 'South African Rand', flag: '🇿🇦' },
       { code: 'AED', name: 'UAE Dirham', flag: '🇦🇪' },
-      { code: 'CHF', name: 'Swiss Franc', flag: '🇨🇭' }
+      { code: 'CHF', name: 'Swiss Franc', flag: '🇨🇭' },
+      { code: 'BRL', name: 'Brazilian Real', flag: '🇧🇷' },
+      { code: 'MXN', name: 'Mexican Peso', flag: '🇲🇽' },
+      { code: 'CNY', name: 'Chinese Yuan', flag: '🇨🇳' }
     ];
+
+    const GLOBAL_COUNTRIES = [
+      { code: 'CO', name: 'Colombia', flag: '🇨🇴', defaultCurrency: 'COP', defaultLang: 'es', region: 'Americas (LatAm)' },
+      { code: 'KE', name: 'Kenya', flag: '🇰🇪', defaultCurrency: 'KES', defaultLang: 'sw', region: 'East Africa' },
+      { code: 'US', name: 'United States', flag: '🇺🇸', defaultCurrency: 'USD', defaultLang: 'en', region: 'North America' },
+      { code: 'ES', name: 'Spain (España)', flag: '🇪🇸', defaultCurrency: 'EUR', defaultLang: 'es', region: 'Europe' },
+      { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', defaultCurrency: 'GBP', defaultLang: 'en', region: 'Europe' },
+      { code: 'DE', name: 'Germany (Deutschland)', flag: '🇩🇪', defaultCurrency: 'EUR', defaultLang: 'de', region: 'Europe' },
+      { code: 'FR', name: 'France', flag: '🇫🇷', defaultCurrency: 'EUR', defaultLang: 'fr', region: 'Europe' },
+      { code: 'CA', name: 'Canada', flag: '🇨🇦', defaultCurrency: 'CAD', defaultLang: 'en', region: 'North America' },
+      { code: 'AU', name: 'Australia', flag: '🇦🇺', defaultCurrency: 'AUD', defaultLang: 'en', region: 'Oceania' },
+      { code: 'IN', name: 'India', flag: '🇮🇳', defaultCurrency: 'INR', defaultLang: 'en', region: 'Asia' },
+      { code: 'ZA', name: 'South Africa', flag: '🇿🇦', defaultCurrency: 'ZAR', defaultLang: 'en', region: 'Africa' },
+      { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', defaultCurrency: 'AED', defaultLang: 'en', region: 'Middle East' },
+      { code: 'JP', name: 'Japan (日本)', flag: '🇯🇵', defaultCurrency: 'JPY', defaultLang: 'en', region: 'Asia' },
+      { code: 'MX', name: 'Mexico', flag: '🇲🇽', defaultCurrency: 'MXN', defaultLang: 'es', region: 'Americas (LatAm)' },
+      { code: 'BR', name: 'Brazil (Brasil)', flag: '🇧🇷', defaultCurrency: 'BRL', defaultLang: 'pt', region: 'Americas (LatAm)' },
+      { code: 'CH', name: 'Switzerland', flag: '🇨🇭', defaultCurrency: 'CHF', defaultLang: 'de', region: 'Europe' }
+    ];
+
+    const GLOBAL_LANGUAGES = [
+      { code: 'en', name: 'English', flag: '🇬🇧', native: 'English' },
+      { code: 'es', name: 'Spanish', flag: '🇪🇸', native: 'Español' },
+      { code: 'sw', name: 'Swahili', flag: '🇰🇪', native: 'Kiswahili' },
+      { code: 'fr', name: 'French', flag: '🇫🇷', native: 'Français' },
+      { code: 'de', name: 'German', flag: '🇩🇪', native: 'Deutsch' },
+      { code: 'pt', name: 'Portuguese', flag: '🇧🇷', native: 'Português' }
+    ];
+
+    const TRANSLATIONS = {
+      en: {
+        nav_dashboard: "Dashboard",
+        nav_budget: "Budget Plan",
+        nav_expenses: "Expense Ledger",
+        nav_currency: "Forex & FX",
+        nav_notifications: "Alerts Hub",
+        nav_ai: "AI Strategist",
+        nav_settings: "Settings",
+        dash_title: "Money Command Center",
+        dash_salary_label: "Monthly Salary Base",
+        dash_allocated_label: "Total Budget Allocated",
+        dash_spent_label: "Total Spent This Month",
+        dash_remaining_label: "Unspent Safe Buffer",
+        dash_health_status: "Health Status",
+        dash_pie_title: "Category Spending Distribution",
+        dash_pie_sub: "Live visual breakdown of expenses across categories for the active monthly cycle",
+        dash_pie_total_spent: "TOTAL SPENT",
+        dash_pie_empty_title: "No Expenses Recorded in this Cycle",
+        dash_pie_empty_desc: "Log your first expense or click Seed Demo Data to visualize spending distribution across Living, MacBook, Travel, and more.",
+        dash_pie_seed_btn: "Seed Demo Data",
+        dash_bucket_health: "Budget Bucket Health",
+        dash_recent_activity: "Recent Activity",
+        dash_trajectory_title: "Monthly Cashflow Trajectory",
+        dash_trajectory_sub: "Historical spending versus monthly income baseline",
+        btn_add_expense: "＋ Log Expense",
+        btn_scan_receipt: "📷 Scan Receipt",
+        btn_adjust_salary: "💵 Enter / Update Salary",
+        btn_change_currency: "🌐 Change Currency",
+        btn_reminders_25th: "🔔 25th Reminders",
+        btn_add_item: "＋ Add Item",
+        btn_manage_budget: "Manage Budget →",
+        btn_full_ledger: "Full Ledger →",
+        btn_add_category: "＋ New Category",
+        btn_upload_pdf: "📄 Upload PDF Budget",
+        btn_save: "Save",
+        btn_cancel: "Cancel",
+        btn_logout: "🚪 Log Out",
+        auth_title: "Sign in to GAP//FLOW",
+        auth_sub: "Dual-currency financial intelligence across Colombia and Kenya.",
+        auth_tab_signin: "Sign In",
+        auth_tab_signup: "Create Account",
+        auth_apple_btn: "Continue with Apple",
+        auth_guest_btn: "Explore Demo Mode ⚡"
+      },
+      es: {
+        nav_dashboard: "Panel Principal",
+        nav_budget: "Plan de Presupuesto",
+        nav_expenses: "Libro de Gastos",
+        nav_currency: "Divisas y FX",
+        nav_notifications: "Centro de Alertas",
+        nav_ai: "Asesor IA",
+        nav_settings: "Configuración",
+        dash_title: "Centro de Control Financiero",
+        dash_salary_label: "Base de Salario Mensual",
+        dash_allocated_label: "Presupuesto Total Asignado",
+        dash_spent_label: "Total Gastado este Mes",
+        dash_remaining_label: "Flujo de Caja Disponible",
+        dash_health_status: "Estado Financiero",
+        dash_pie_title: "Distribución de Gastos por Categoría",
+        dash_pie_sub: "Desglose visual en vivo de gastos por categorías para el ciclo activo",
+        dash_pie_total_spent: "TOTAL GASTADO",
+        dash_pie_empty_title: "Sin Gastos Registrados en este Ciclo",
+        dash_pie_empty_desc: "Registra tu primer gasto o pulsa 'Datos de Demostración' para visualizar la distribución entre Vivienda, MacBook, Viajes y más.",
+        dash_pie_seed_btn: "Datos de Demostración",
+        dash_bucket_health: "Salud de Categorías Presupuestarias",
+        dash_recent_activity: "Actividad Reciente",
+        dash_trajectory_title: "Trayectoria Mensual de Flujo de Caja",
+        dash_trajectory_sub: "Gasto histórico frente a la línea base de ingresos",
+        btn_add_expense: "＋ Registrar Gasto",
+        btn_scan_receipt: "📷 Escanear Recibo",
+        btn_adjust_salary: "💵 Ingresar / Editar Salario",
+        btn_change_currency: "🌐 Cambiar Moneda",
+        btn_reminders_25th: "🔔 Recordatorios del 25",
+        btn_add_item: "＋ Añadir Categoría",
+        btn_manage_budget: "Gestionar Presupuesto →",
+        btn_full_ledger: "Libro Completo →",
+        btn_add_category: "＋ Nueva Categoría",
+        btn_upload_pdf: "📄 Subir Presupuesto PDF",
+        btn_save: "Guardar",
+        btn_cancel: "Cancelar",
+        btn_logout: "🚪 Cerrar Sesión",
+        auth_title: "Iniciar Sesión en GAP//FLOW",
+        auth_sub: "Inteligencia financiera bimonetaria entre Colombia y Kenia.",
+        auth_tab_signin: "Iniciar Sesión",
+        auth_tab_signup: "Crear Cuenta",
+        auth_apple_btn: "Continuar con Apple",
+        auth_guest_btn: "Explorar Modo Demo ⚡"
+      },
+      sw: {
+        nav_dashboard: "Dashibodi",
+        nav_budget: "Mpango wa Bajeti",
+        nav_expenses: "Kumbukumbu ya Matumizi",
+        nav_currency: "Ubadilishaji Fedha",
+        nav_notifications: "Arifa na Vikumbusho",
+        nav_ai: "Mshauri wa AI",
+        nav_settings: "Mipangilio",
+        dash_title: "Kituo cha Usimamizi wa Fedha",
+        dash_salary_label: "Mshahara / Mapato ya Mwezi",
+        dash_allocated_label: "Jumla ya Bajeti Iliyotengwa",
+        dash_spent_label: "Jumla Iliyotumika Mwezi Huu",
+        dash_remaining_label: "Salio Linalobaki la Usalama",
+        dash_health_status: "Hali ya Kifedha",
+        dash_pie_title: "Mgawanyo wa Matumizi kwa Vitengo",
+        dash_pie_sub: "Uchambuzi wa moja kwa moja wa matumizi kulingana na vitengo vya mwezi",
+        dash_pie_total_spent: "JUMLA ILIYOTUMIKA",
+        dash_pie_empty_title: "Hakuna Matumizi Yaliyorekodiwa Mwezi Huu",
+        dash_pie_empty_desc: "Weka matumizi ya kwanza au bofya 'Weka Data ya Mfano' ili kuona mchoro wa bajeti.",
+        dash_pie_seed_btn: "Weka Data ya Mfano",
+        dash_bucket_health: "Hali ya Vitengo vya Bajeti",
+        dash_recent_activity: "Shughuli za Hivi Karibuni",
+        dash_trajectory_title: "Mwenendo wa Matumizi ya Kila Mwezi",
+        dash_trajectory_sub: "Matumizi ya kihistoria kulinganisha na mshahara",
+        btn_add_expense: "＋ Weka Matumizi",
+        btn_scan_receipt: "📷 Changanua Risiti",
+        btn_adjust_salary: "💵 Weka / Hariri Mshahara",
+        btn_change_currency: "🌐 Badilisha Sarafu",
+        btn_reminders_25th: "🔔 Vikumbusho vya Tarehe 25",
+        btn_add_item: "＋ Ongeza Kitengo",
+        btn_manage_budget: "Simamia Bajeti →",
+        btn_full_ledger: "Orodha Kamili →",
+        btn_add_category: "＋ Kitengo Kipya",
+        btn_upload_pdf: "📄 Pakia Bajeti ya PDF",
+        btn_save: "Hifadhi",
+        btn_cancel: "Ghairi",
+        btn_logout: "🚪 Toka Kwenye Akaunti",
+        auth_title: "Ingia kwenye GAP//FLOW",
+        auth_sub: "Usimamizi wa kisasa wa fedha kati ya Colombia na Kenya.",
+        auth_tab_signin: "Ingia",
+        auth_tab_signup: "Fungua Akaunti",
+        auth_apple_btn: "Endelea na Apple",
+        auth_guest_btn: "Jaribu Hali ya Demo ⚡"
+      },
+      fr: {
+        nav_dashboard: "Tableau de Bord",
+        nav_budget: "Plan Budgétaire",
+        nav_expenses: "Registre des Dépenses",
+        nav_currency: "Taux de Change",
+        nav_notifications: "Centre d'Alertes",
+        nav_ai: "Conseiller IA",
+        nav_settings: "Paramètres",
+        dash_title: "Centre de Contrôle Financier",
+        dash_salary_label: "Base de Salaire Mensuel",
+        dash_allocated_label: "Budget Total Alloué",
+        dash_spent_label: "Total Dépensé ce Mois",
+        dash_remaining_label: "Marge Restante Disponible",
+        dash_health_status: "État de Santé",
+        dash_pie_title: "Répartition des Dépenses par Catégorie",
+        dash_pie_sub: "Visualisation dynamique des dépenses par poste pour le cycle actif",
+        dash_pie_total_spent: "TOTAL DÉPENSÉ",
+        dash_pie_empty_title: "Aucune Dépense Enregistrée ce Mois",
+        dash_pie_empty_desc: "Ajoutez votre première dépense ou chargez des données de test pour afficher le graphique.",
+        dash_pie_seed_btn: "Données de Démo",
+        dash_bucket_health: "Santé des Enveloppes Budgétaires",
+        dash_recent_activity: "Activité Récente",
+        dash_trajectory_title: "Trajectoire Mensuelle des Dépenses",
+        dash_trajectory_sub: "Historique des flux comparé au revenu mensuel",
+        btn_add_expense: "＋ Ajouter Dépense",
+        btn_scan_receipt: "📷 Scanner Reçu",
+        btn_adjust_salary: "💵 Modifier Salaire",
+        btn_change_currency: "🌐 Changer Devise",
+        btn_reminders_25th: "🔔 Rappels du 25",
+        btn_add_item: "＋ Nouveau Poste",
+        btn_manage_budget: "Gérer Budget →",
+        btn_full_ledger: "Grand Livre →",
+        btn_add_category: "＋ Nouvelle Catégorie",
+        btn_upload_pdf: "📄 Téléverser PDF",
+        btn_save: "Enregistrer",
+        btn_cancel: "Annuler",
+        btn_logout: "🚪 Se Déconnecter",
+        auth_title: "Connexion à GAP//FLOW",
+        auth_sub: "Intelligence financière multi-devises Colombie & Kenya.",
+        auth_tab_signin: "Se Connecter",
+        auth_tab_signup: "Créer un Compte",
+        auth_apple_btn: "Continuer avec Apple",
+        auth_guest_btn: "Mode Démonstration ⚡"
+      },
+      de: {
+        nav_dashboard: "Übersicht",
+        nav_budget: "Budgetplan",
+        nav_expenses: "Ausgabenbuch",
+        nav_currency: "Währungskurse",
+        nav_notifications: "Benachrichtigungen",
+        nav_ai: "KI-Berater",
+        nav_settings: "Einstellungen",
+        dash_title: "Finanz-Kommandozentrale",
+        dash_salary_label: "Monatliche Gehaltsbasis",
+        dash_allocated_label: "Gesamtes Budget",
+        dash_spent_label: "Diesen Monat Ausgegeben",
+        dash_remaining_label: "Verfügbarer Puffer",
+        dash_health_status: "Finanz-Status",
+        dash_pie_title: "Ausgabenverteilung nach Kategorien",
+        dash_pie_sub: "Live-Übersicht der Ausgaben nach Budget-Kategorien für den aktuellen Monat",
+        dash_pie_total_spent: "GESAMT AUSGEGEBEN",
+        dash_pie_empty_title: "Keine Ausgaben in diesem Zyklus erfasst",
+        dash_pie_empty_desc: "Buchen Sie Ihre erste Ausgabe oder laden Sie Beispieldaten zur Visualisierung.",
+        dash_pie_seed_btn: "Beispieldaten laden",
+        dash_bucket_health: "Budget-Kategorien Status",
+        dash_recent_activity: "Letzte Aktivitäten",
+        dash_trajectory_title: "Monatlicher Cashflow-Verlauf",
+        dash_trajectory_sub: "Verlauf der Ausgaben im Vergleich zum Gehalt",
+        btn_add_expense: "＋ Ausgabe buchen",
+        btn_scan_receipt: "📷 Beleg scannen",
+        btn_adjust_salary: "💵 Gehalt anpassen",
+        btn_change_currency: "🌐 Währung wählen",
+        btn_reminders_25th: "🔔 Erinnerungen zum 25.",
+        btn_add_item: "＋ Eintrag anlegen",
+        btn_manage_budget: "Budget verwalten →",
+        btn_full_ledger: "Ausgabenbuch →",
+        btn_add_category: "＋ Neue Kategorie",
+        btn_upload_pdf: "📄 PDF hochladen",
+        btn_save: "Speichern",
+        btn_cancel: "Abbrechen",
+        btn_logout: "🚪 Abmelden",
+        auth_title: "Bei GAP//FLOW anmelden",
+        auth_sub: "Finanzintelligenz für Kolumbien und Kenia.",
+        auth_tab_signin: "Anmelden",
+        auth_tab_signup: "Konto erstellen",
+        auth_apple_btn: "Mit Apple fortfahren",
+        auth_guest_btn: "Gast-Demo ausprobieren ⚡"
+      },
+      pt: {
+        nav_dashboard: "Painel Principal",
+        nav_budget: "Plano de Orçamento",
+        nav_expenses: "Livro de Despesas",
+        nav_currency: "Câmbio e FX",
+        nav_notifications: "Central de Alertas",
+        nav_ai: "Consultor IA",
+        nav_settings: "Configurações",
+        dash_title: "Centro de Comando Financeiro",
+        dash_salary_label: "Base de Salário Mensal",
+        dash_allocated_label: "Orçamento Total Alocado",
+        dash_spent_label: "Total Gasto neste Mês",
+        dash_remaining_label: "Margem Segura Restante",
+        dash_health_status: "Saúde Financeira",
+        dash_pie_title: "Distribuição de Gastos por Categoria",
+        dash_pie_sub: "Divisão visual dinâmica de despesas por categoria para o ciclo ativo",
+        dash_pie_total_spent: "TOTAL GASTO",
+        dash_pie_empty_title: "Nenhuma despesa registrada neste ciclo",
+        dash_pie_empty_desc: "Registre seu primeiro gasto ou gere dados de demonstração para visualizar o gráfico.",
+        dash_pie_seed_btn: "Dados de Demonstração",
+        dash_bucket_health: "Saúde dos Envelopes de Orçamento",
+        dash_recent_activity: "Atividade Recente",
+        dash_trajectory_title: "Trajetória Mensal de Fluxo de Caixa",
+        dash_trajectory_sub: "Histórico de gastos comparado à receita mensal",
+        btn_add_expense: "＋ Registrar Despesa",
+        btn_scan_receipt: "📷 Escanear Recibo",
+        btn_adjust_salary: "💵 Atualizar Salário",
+        btn_change_currency: "🌐 Trocar Moeda",
+        btn_reminders_25th: "🔔 Lembretes do dia 25",
+        btn_add_item: "＋ Adicionar Item",
+        btn_manage_budget: "Gerenciar Orçamento →",
+        btn_full_ledger: "Livro Completo →",
+        btn_add_category: "＋ Nova Categoria",
+        btn_upload_pdf: "📄 Enviar Orçamento PDF",
+        btn_save: "Salvar",
+        btn_cancel: "Cancelar",
+        btn_logout: "🚪 Sair da Conta",
+        auth_title: "Entrar no GAP//FLOW",
+        auth_sub: "Inteligência financeira multimoeda entre Colômbia e Quênia.",
+        auth_tab_signin: "Entrar",
+        auth_tab_signup: "Criar Conta",
+        auth_apple_btn: "Continuar com a Apple",
+        auth_guest_btn: "Explorar Modo Demo ⚡"
+      }
+    };
 
     // STATE INITIALIZATION
     let appState = JSON.parse(localStorage.getItem("gapFlowState") || "null") || {
       salary: 2300000,
       currency: 'COP',
+      country: 'CO',
+      language: 'en',
+      dateFormat: 'YYYY-MM-DD',
+      numberFormat: 'standard',
+      paydayDay: 25,
+      savingsGoalPercent: 25,
       rules: { ...INITIAL_RULES },
       expenses: [],
       salaryMonths: {},
@@ -2568,6 +4273,12 @@
 
     // Ensure state integrity
     if (!appState.currency) appState.currency = 'COP';
+    if (!appState.country) appState.country = 'CO';
+    if (!appState.language) appState.language = localStorage.getItem("gapFlowLang") || 'en';
+    if (!appState.dateFormat) appState.dateFormat = 'YYYY-MM-DD';
+    if (!appState.numberFormat) appState.numberFormat = 'standard';
+    if (!appState.paydayDay) appState.paydayDay = 25;
+    if (!appState.savingsGoalPercent) appState.savingsGoalPercent = 25;
     if (!appState.rules) appState.rules = { ...INITIAL_RULES };
     if (!appState.expenses) appState.expenses = [];
     if (!appState.reminders) {
@@ -2591,6 +4302,45 @@
     }
     if (!appState.salaryMonths) appState.salaryMonths = {};
     if (!appState.skips) appState.skips = {};
+    if (!appState.user) {
+      appState.user = {
+        isLoggedIn: true,
+        id: 'usr_main',
+        name: 'Brian Gathecere',
+        email: 'bgathecere2@gmail.com',
+        provider: 'apple',
+        avatar: '🍏',
+        plan: 'Pro Enterprise'
+      };
+    }
+    if (!appState.accounts || !Array.isArray(appState.accounts) || appState.accounts.length === 0) {
+      appState.accounts = [
+        {
+          id: 'acc_1',
+          name: 'Brian Gathecere',
+          email: 'bgathecere2@gmail.com',
+          provider: 'apple',
+          avatar: '🍏',
+          role: 'Primary Account (LatAm / Colombia)'
+        },
+        {
+          id: 'acc_2',
+          name: 'Nomad Global Business',
+          email: 'brian@gapflow.io',
+          provider: 'email',
+          avatar: '💼',
+          role: 'Corporate Travel & Kenya Hub'
+        }
+      ];
+    }
+    if (!appState.rating) {
+      appState.rating = {
+        score: 5,
+        comment: 'Exceptional dual-currency budget system. Makes managing cashflow across Colombia and Kenya effortless!',
+        date: '2026-08-23'
+      };
+    }
+    if (!appState.feedback) appState.feedback = [];
 
     const DEFAULT_FOREX_RATES = {
       USD: 1.0,
@@ -2620,6 +4370,9 @@
     let currentFontSize = localStorage.getItem("gapFlowFontSize") || "md";
     let currentFont = localStorage.getItem("gapFlowFont") || "phone";
     let cameraMediaStream = null;
+    let activeSettingsWinTab = 'account';
+    let authFormMode = 'signin';
+    let currentRatingScore = 5;
 
     const FONT_MAP = {
       phone: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -2629,6 +4382,822 @@
       mono: '"JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       serif: 'Georgia, Cambria, "Times New Roman", Times, serif'
     };
+
+    // ========================================================
+    // TRANSLATIONS & i18n ENGINE
+    // ========================================================
+    function t(key, defaultVal = '') {
+      const lang = appState.language || 'en';
+      const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
+      return dict[key] || (TRANSLATIONS.en && TRANSLATIONS.en[key]) || defaultVal || key;
+    }
+
+    function applyTranslations() {
+      const lang = appState.language || 'en';
+      
+      // Update Main Navigation labels
+      const navDash = document.querySelector('#nav-dashboard span:last-child');
+      if (navDash) navDash.textContent = t('nav_dashboard', 'Dashboard');
+
+      const navBudget = document.querySelector('#nav-budget span:last-child');
+      if (navBudget) navBudget.textContent = t('nav_budget', 'Budget Plan');
+
+      const navExp = document.querySelector('#nav-expenses span:last-child');
+      if (navExp) navExp.textContent = t('nav_expenses', 'Expense Ledger');
+
+      const navCur = document.querySelector('#nav-currency span:last-child');
+      if (navCur) navCur.textContent = t('nav_currency', 'Forex & FX');
+
+      const navNotif = document.querySelector('#nav-notifications span:last-child');
+      if (navNotif) navNotif.textContent = t('nav_notifications', 'Alerts Hub');
+
+      const navAi = document.querySelector('#nav-ai span:last-child');
+      if (navAi) navAi.textContent = t('nav_ai', 'AI Strategist');
+
+      const navSet = document.querySelector('#nav-settings span:last-child');
+      if (navSet) navSet.textContent = t('nav_settings', 'Settings');
+
+      // Mobile bottom tabs
+      const mDash = document.querySelector('#m-nav-dashboard span');
+      if (mDash) mDash.textContent = t('nav_dashboard', 'Dash').slice(0, 7);
+
+      const mBudget = document.querySelector('#m-nav-budget span');
+      if (mBudget) mBudget.textContent = t('nav_budget', 'Budget').slice(0, 7);
+
+      const mExp = document.querySelector('#m-nav-expenses span');
+      if (mExp) mExp.textContent = t('nav_expenses', 'Expenses').slice(0, 7);
+
+      const mCur = document.querySelector('#m-nav-currency span');
+      if (mCur) mCur.textContent = t('nav_currency', 'Forex').slice(0, 7);
+
+      const mNotif = document.querySelector('#m-nav-notifications span:not(.m-badge-dot)');
+      if (mNotif) mNotif.textContent = t('nav_notifications', 'Alerts').slice(0, 7);
+
+      const mAi = document.querySelector('#m-nav-ai span');
+      if (mAi) mAi.textContent = t('nav_ai', 'AI').slice(0, 7);
+
+      const mSet = document.querySelector('#m-nav-settings span');
+      if (mSet) mSet.textContent = t('nav_settings', 'Settings').slice(0, 7);
+
+      // Header Brand
+      const headerTitle = document.getElementById('headerTitleText');
+      if (headerTitle) {
+        const countryObj = GLOBAL_COUNTRIES.find(c => c.code === appState.country) || GLOBAL_COUNTRIES[0];
+        headerTitle.textContent = `GAP//FLOW • ${countryObj.flag} ${appState.currency || 'COP'}`;
+      }
+
+      // Update generic [data-i18n] text nodes
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key) {
+          const translatedText = t(key);
+          if (translatedText) el.textContent = translatedText;
+        }
+      });
+
+      // Update generic [data-i18n-placeholder] attributes
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (key) {
+          const translatedText = t(key);
+          if (translatedText) el.setAttribute('placeholder', translatedText);
+        }
+      });
+
+      // Update Auth Landing Screen text
+      const authTitleEl = document.getElementById('authHeroTitle');
+      if (authTitleEl) authTitleEl.textContent = t('auth_title', 'Sign in to GAP//FLOW');
+
+      const authSubEl = document.getElementById('authHeroSub');
+      if (authSubEl) authSubEl.textContent = t('auth_sub', 'Dual-currency financial intelligence across Colombia and Kenya.');
+
+      const appleBtnText = document.querySelector('#btnAuthApple span:last-child');
+      if (appleBtnText) appleBtnText.textContent = t('auth_apple_btn', 'Continue with Apple');
+
+      const guestBtnText = document.getElementById('btnAuthGuest');
+      if (guestBtnText) guestBtnText.textContent = t('auth_guest_btn', 'Explore Demo Mode ⚡');
+    }
+
+    // ========================================================
+    // SETTINGS STUDIO SUB-NAVIGATION CONTROLLER
+    // ========================================================
+    function jumpToSettingsSection(sectionId) {
+      document.querySelectorAll('.settings-subnav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.id === 'setNavBtn-' + sectionId);
+      });
+      const targetEl = document.getElementById('settings-sec-' + sectionId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // ========================================================
+    // COUNTRY & REGIONAL PRESET CONTROLLER
+    // ========================================================
+    function renderSettingsCountryGrid(filterText = '') {
+      const grid = document.getElementById('settingsCountryGrid');
+      if (!grid) return;
+
+      const activeCountryCode = (appState.country || 'CO').toUpperCase();
+      const q = (filterText || '').trim().toLowerCase();
+
+      const filtered = GLOBAL_COUNTRIES.filter(c => {
+        if (!q) return true;
+        return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.defaultCurrency.toLowerCase().includes(q);
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="dim" style="grid-column: 1 / -1; padding: 12px; text-align: center;">No countries matched search.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(c => {
+        const isActive = c.code === activeCountryCode;
+        return `
+          <div class="country-tile ${isActive ? 'active' : ''}" onclick="setAppCountry('${c.code}')">
+            <span style="font-size: 26px; line-height: 1;">${c.flag}</span>
+            <div style="flex: 1; min-width: 0;">
+              <div class="country-tile-title">${escapeHtml(c.name)}</div>
+              <div class="country-tile-sub">${c.defaultCurrency} • ${c.region}</div>
+            </div>
+            ${isActive ? '<span style="font-size: 14px; color: var(--accent); font-weight: bold;">✓</span>' : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterCountryGrid(query) {
+      renderSettingsCountryGrid(query);
+    }
+
+    function updateCountryUI() {
+      const activeCountryCode = (appState.country || 'CO').toUpperCase();
+      const countryObj = GLOBAL_COUNTRIES.find(c => c.code === activeCountryCode) || GLOBAL_COUNTRIES[0];
+
+      const badge = document.getElementById('settingsActiveCountryBadge');
+      if (badge) badge.textContent = `${countryObj.flag} ${countryObj.name}`;
+
+      const bannerFlag = document.getElementById('countryBannerFlag');
+      if (bannerFlag) bannerFlag.textContent = countryObj.flag;
+
+      const bannerName = document.getElementById('countryBannerName');
+      if (bannerName) bannerName.textContent = countryObj.name;
+
+      const bannerMeta = document.getElementById('countryBannerMeta');
+      if (bannerMeta) {
+        const langObj = GLOBAL_LANGUAGES.find(l => l.code === countryObj.defaultLang) || { native: 'English' };
+        bannerMeta.textContent = `Default Currency: ${countryObj.defaultCurrency} • Primary Language: ${langObj.native} • Region: ${countryObj.region}`;
+      }
+
+      renderSettingsCountryGrid();
+    }
+
+    function setAppCountry(countryCode, autoApplyDefaults = false) {
+      const targetCode = (countryCode || 'CO').toUpperCase();
+      const countryObj = GLOBAL_COUNTRIES.find(c => c.code === targetCode) || GLOBAL_COUNTRIES[0];
+      appState.country = countryObj.code;
+
+      if (autoApplyDefaults) {
+        if (countryObj.defaultCurrency && countryObj.defaultCurrency !== appState.currency) {
+          setAppBaseCurrency(countryObj.defaultCurrency, true);
+        }
+        if (countryObj.defaultLang && countryObj.defaultLang !== appState.language) {
+          setAppLanguage(countryObj.defaultLang);
+        }
+      }
+
+      persistState();
+      updateCountryUI();
+      applyTranslations();
+
+      showToastNotification(
+        "🌍 Country Configured",
+        `Operational country set to ${countryObj.flag} ${countryObj.name}.`,
+        "good",
+        countryObj.flag
+      );
+    }
+
+    function applySelectedCountryDefaults() {
+      const activeCountryCode = (appState.country || 'CO').toUpperCase();
+      const countryObj = GLOBAL_COUNTRIES.find(c => c.code === activeCountryCode) || GLOBAL_COUNTRIES[0];
+      setAppCountry(countryObj.code, true);
+    }
+
+    // ========================================================
+    // LANGUAGE (i18n) CONTROLLER
+    // ========================================================
+    function renderSettingsLanguageGrid() {
+      const grid = document.getElementById('settingsLanguageGrid');
+      if (!grid) return;
+
+      const activeLang = (appState.language || 'en').toLowerCase();
+      grid.innerHTML = GLOBAL_LANGUAGES.map(l => {
+        const isActive = l.code === activeLang;
+        return `
+          <div class="language-tile ${isActive ? 'active' : ''}" onclick="setAppLanguage('${l.code}')">
+            <span style="font-size: 24px; line-height: 1;">${l.flag}</span>
+            <div style="flex: 1;">
+              <div class="language-tile-title">${escapeHtml(l.native)}</div>
+              <div class="language-tile-sub">${escapeHtml(l.name)}</div>
+            </div>
+            ${isActive ? '<span style="font-size: 14px; color: var(--accent); font-weight: bold;">✓</span>' : ''}
+          </div>
+        `;
+      }).join('');
+
+      const badge = document.getElementById('settingsActiveLanguageBadge');
+      const activeObj = GLOBAL_LANGUAGES.find(l => l.code === activeLang) || GLOBAL_LANGUAGES[0];
+      if (badge && activeObj) {
+        badge.textContent = `${activeObj.flag} ${activeObj.native}`;
+      }
+    }
+
+    function setAppLanguage(langCode) {
+      const code = (langCode || 'en').toLowerCase();
+      appState.language = code;
+      localStorage.setItem("gapFlowLang", code);
+      persistState();
+      renderSettingsLanguageGrid();
+      applyTranslations();
+      renderApp();
+
+      const langObj = GLOBAL_LANGUAGES.find(l => l.code === code) || GLOBAL_LANGUAGES[0];
+      showToastNotification("🗣️ Language Updated", `Switched display language to ${langObj.native} (${langObj.name}).`, "good", langObj.flag);
+      playChime('success');
+    }
+
+    // ========================================================
+    // FORMATS & REGIONAL PREFERENCES
+    // ========================================================
+    function setDateFormat(format) {
+      appState.dateFormat = format;
+      persistState();
+      renderApp();
+      showToastNotification("📅 Date Format Updated", `Set date presentation pattern to ${format}.`, "good", "📅");
+    }
+
+    function setNumberFormat(format) {
+      appState.numberFormat = format;
+      persistState();
+      renderApp();
+      showToastNotification("🔢 Number Format Updated", `Set decimal styling to ${format}.`, "good", "🔢");
+    }
+
+    function setPaydayDay(dayNum) {
+      const day = Math.min(31, Math.max(1, Number(dayNum) || 25));
+      appState.paydayDay = day;
+      persistState();
+      renderApp();
+      showToastNotification("💰 Payday Cycle Day Updated", `Monthly disbursement day set to the ${day}th of every month.`, "good", "💰");
+    }
+
+    function setSavingsGoalPercent(percent) {
+      appState.savingsGoalPercent = Number(percent) || 25;
+      persistState();
+      renderApp();
+      showToastNotification("🎯 Savings Target Updated", `Monthly savings target set to ${percent}%.`, "good", "🎯");
+    }
+
+    // ========================================================
+    // USER AUTHENTICATION & LANDING PAGE CONTROLLER
+    // ========================================================
+    function updateUserProfileUI() {
+      const user = appState.user || {
+        isLoggedIn: true,
+        name: 'Brian Gathecere',
+        email: 'bgathecere2@gmail.com',
+        avatar: '🍏',
+        provider: 'apple',
+        plan: 'Pro Enterprise'
+      };
+
+      // Header button
+      const navAvatar = document.getElementById('navUserAvatar');
+      if (navAvatar) navAvatar.textContent = user.avatar || (user.provider === 'apple' ? '🍏' : '👤');
+
+      const navName = document.getElementById('navUserName');
+      if (navName) navName.textContent = user.name ? user.name.split(' ')[0] : 'Account';
+
+      // Settings page profile card
+      const setAvatar = document.getElementById('settingsUserAvatarLarge');
+      if (setAvatar) setAvatar.textContent = user.avatar || (user.provider === 'apple' ? '🍏' : '👤');
+
+      const setName = document.getElementById('settingsUserNameLarge');
+      if (setName) setName.textContent = user.name || 'User Account';
+
+      const setEmail = document.getElementById('settingsUserEmailLarge');
+      if (setEmail) setEmail.textContent = user.email || 'user@gapflow.io';
+
+      const setMeta = document.getElementById('settingsUserMetaLarge');
+      if (setMeta) {
+        const provName = user.provider === 'apple' ? 'Apple ID' : (user.provider === 'email' ? 'Email Verification' : 'Demo Account');
+        setMeta.textContent = `Signed in via ${provName} • ${user.plan || 'Pro Enterprise'}`;
+      }
+
+      // Settings Window profile card
+      const winAvatar = document.getElementById('winAccountAvatar');
+      if (winAvatar) winAvatar.textContent = user.avatar || (user.provider === 'apple' ? '🍏' : '👤');
+
+      const winName = document.getElementById('winAccountName');
+      if (winName) winName.textContent = user.name || 'User Account';
+
+      const winEmail = document.getElementById('winAccountEmail');
+      if (winEmail) winEmail.textContent = user.email || 'user@gapflow.io';
+
+      const winProv = document.getElementById('winAccountProvider');
+      if (winProv) {
+        winProv.textContent = `Signed in with ${user.provider === 'apple' ? 'Apple ID' : (user.provider === 'email' ? 'Verified Email' : 'Guest Account')}`;
+      }
+
+      renderAccountsList();
+    }
+
+    function checkAuthState() {
+      const landing = document.getElementById('landingPageContainer');
+      const navbar = document.getElementById('mainNavbar');
+      const mainContent = document.querySelector('main');
+      const mobileBar = document.querySelector('.mobile-tab-bar');
+
+      const isLoggedIn = appState.user && appState.user.isLoggedIn !== false;
+
+      if (!isLoggedIn) {
+        if (landing) landing.classList.remove('hide');
+        if (navbar) navbar.style.display = 'none';
+        if (mainContent) mainContent.style.display = 'none';
+        if (mobileBar) mobileBar.style.display = 'none';
+      } else {
+        if (landing) landing.classList.add('hide');
+        if (navbar) navbar.style.display = 'block';
+        if (mainContent) mainContent.style.display = 'block';
+        if (mobileBar) mobileBar.style.display = 'flex';
+        updateUserProfileUI();
+      }
+    }
+
+    function toggleAuthFormMode(mode) {
+      authFormMode = mode;
+      const tabIn = document.getElementById('authTabSignIn');
+      const tabUp = document.getElementById('authTabSignUp');
+      const nameField = document.getElementById('authFieldName');
+      const regionField = document.getElementById('authFieldRegion');
+      const submitBtn = document.getElementById('authSubmitButton');
+      const appleBtnText = document.getElementById('appleAuthButtonText');
+
+      if (mode === 'signup') {
+        if (tabIn) tabIn.classList.remove('active');
+        if (tabUp) tabUp.classList.add('active');
+        if (nameField) nameField.classList.remove('hide');
+        if (regionField) regionField.classList.remove('hide');
+        if (submitBtn) submitBtn.textContent = 'Create GAP//FLOW Account';
+        if (appleBtnText) appleBtnText.textContent = 'Sign up with Apple';
+      } else {
+        if (tabIn) tabIn.classList.add('active');
+        if (tabUp) tabUp.classList.remove('active');
+        if (nameField) nameField.classList.add('hide');
+        if (regionField) regionField.classList.add('hide');
+        if (submitBtn) submitBtn.textContent = 'Sign In to GAP//FLOW';
+        if (appleBtnText) appleBtnText.textContent = 'Sign in with Apple';
+      }
+    }
+
+    function triggerAppleSignIn() {
+      // Simulate seamless Apple ID Authentication Flow
+      showToastNotification("Apple ID", "Authenticating via Apple Secure Enclave...", "info", "🍏");
+      
+      setTimeout(() => {
+        appState.user = {
+          isLoggedIn: true,
+          id: 'usr_apple_' + Date.now(),
+          name: 'Brian Gathecere',
+          email: 'bgathecere2@gmail.com',
+          avatar: '🍏',
+          provider: 'apple',
+          plan: 'Pro Enterprise'
+        };
+
+        // Add to accounts list if not already present
+        if (!appState.accounts) appState.accounts = [];
+        if (!appState.accounts.some(a => a.email === 'bgathecere2@gmail.com')) {
+          appState.accounts.push({
+            id: appState.user.id,
+            name: appState.user.name,
+            email: appState.user.email,
+            avatar: '🍏',
+            provider: 'apple',
+            role: 'Primary Account (Apple ID)'
+          });
+        }
+
+        persistState();
+        checkAuthState();
+        switchPage('dashboard');
+        showToastNotification("Welcome back, Brian!", "Successfully signed in with Apple ID.", "good", "🍏");
+        playChime('success');
+      }, 700);
+    }
+
+    function handleAuthFormSubmit() {
+      const email = document.getElementById('authInputEmail')?.value || 'user@gapflow.io';
+      const name = document.getElementById('authInputName')?.value || email.split('@')[0];
+      const preferredCur = document.getElementById('authInputCurrency')?.value;
+
+      showToastNotification("Signing in", `Verifying credentials for ${email}...`, "info", "✉️");
+
+      setTimeout(() => {
+        appState.user = {
+          isLoggedIn: true,
+          id: 'usr_email_' + Date.now(),
+          name: name || 'GAP//FLOW User',
+          email: email,
+          avatar: '👤',
+          provider: 'email',
+          plan: 'Pro Enterprise'
+        };
+
+        if (preferredCur && preferredCur !== appState.currency) {
+          setAppBaseCurrency(preferredCur, true);
+        }
+
+        if (!appState.accounts) appState.accounts = [];
+        if (!appState.accounts.some(a => a.email === email)) {
+          appState.accounts.push({
+            id: appState.user.id,
+            name: appState.user.name,
+            email: appState.user.email,
+            avatar: '👤',
+            provider: 'email',
+            role: 'Email Workspace'
+          });
+        }
+
+        persistState();
+        checkAuthState();
+        switchPage('dashboard');
+        showToastNotification("Authenticated", `Welcome to GAP//FLOW, ${appState.user.name}!`, "good", "✅");
+        playChime('success');
+      }, 600);
+    }
+
+    function signInAsGuest() {
+      appState.user = {
+        isLoggedIn: true,
+        id: 'usr_guest',
+        name: 'Demo Nomad',
+        email: 'demo@gapflow.io',
+        avatar: '⚡',
+        provider: 'guest',
+        plan: 'Live Interactive Demo'
+      };
+      persistState();
+      checkAuthState();
+      switchPage('dashboard');
+      showToastNotification("Demo Mode Active", "Exploring GAP//FLOW in interactive guest mode.", "good", "⚡");
+      playChime('success');
+    }
+
+    function logOutUser() {
+      if (confirm("Are you sure you want to log out of your GAP//FLOW session?")) {
+        if (!appState.user) appState.user = {};
+        appState.user.isLoggedIn = false;
+        persistState();
+        closeSettingsWindow();
+        checkAuthState();
+        showToastNotification("Logged Out", "You have securely signed out of your account.", "info", "🔒");
+        playChime('alert');
+      }
+    }
+
+    function simulateForgotPassword() {
+      const email = document.getElementById('authInputEmail')?.value || 'your email address';
+      alert(`A secure password reset link and 6-digit verification code have been dispatched to ${email}.`);
+    }
+
+    // ========================================================
+    // MULTI-ACCOUNT & WORKSPACE MANAGEMENT
+    // ========================================================
+    function renderAccountsList() {
+      const winContainer = document.getElementById('winAccountsListContainer');
+      const setContainer = document.getElementById('settingsAccountsListContainer');
+      const accounts = appState.accounts || [];
+      const currentEmail = appState.user?.email || '';
+
+      const html = accounts.map(acc => {
+        const isCurrent = acc.email === currentEmail;
+        return `
+          <div class="account-tile-card ${isCurrent ? 'active' : ''}">
+            <div class="account-tile-avatar">${acc.avatar || '👤'}</div>
+            <div class="account-tile-info">
+              <div class="account-tile-name">
+                ${escapeHtml(acc.name)}
+                ${isCurrent ? '<span class="badge green" style="font-size: 10px; padding: 1px 6px;">Active</span>' : ''}
+              </div>
+              <div class="account-tile-email">${escapeHtml(acc.email)}</div>
+              <div class="dim" style="font-size: 10px; margin-top: 1px;">${escapeHtml(acc.role || 'Workspace')}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${!isCurrent ? `<button class="primary sm" style="padding: 3px 8px; font-size: 11px;" onclick="switchActiveAccount('${acc.id}')">Switch</button>` : ''}
+              ${accounts.length > 1 && !isCurrent ? `<button class="secondary sm" style="padding: 3px 6px; font-size: 11px; color: var(--red);" onclick="removeAccount('${acc.id}')" title="Remove Profile">✕</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (winContainer) winContainer.innerHTML = html;
+      if (setContainer) setContainer.innerHTML = html;
+    }
+
+    function switchActiveAccount(accId) {
+      const target = (appState.accounts || []).find(a => a.id === accId);
+      if (!target) return;
+
+      appState.user = {
+        isLoggedIn: true,
+        id: target.id,
+        name: target.name,
+        email: target.email,
+        avatar: target.avatar || '👤',
+        provider: target.provider || 'email',
+        plan: 'Pro Enterprise'
+      };
+
+      persistState();
+      updateUserProfileUI();
+      renderAccountsList();
+      showToastNotification("Workspace Switched", `Switched active profile to ${target.name}.`, "good", target.avatar || "👤");
+      playChime('success');
+    }
+
+    function openAddAccountDialog() {
+      const modal = document.getElementById('addAccountModal');
+      if (modal) modal.classList.remove('hide');
+    }
+
+    function closeAddAccountDialog() {
+      const modal = document.getElementById('addAccountModal');
+      if (modal) modal.classList.add('hide');
+    }
+
+    function handleAddNewAccountSubmit() {
+      const name = document.getElementById('addAccInputName')?.value.trim();
+      const email = document.getElementById('addAccInputEmail')?.value.trim();
+      const provider = document.getElementById('addAccInputProvider')?.value || 'email';
+
+      if (!name || !email) {
+        alert('Please provide an account name and email address.');
+        return;
+      }
+
+      const avatar = provider === 'apple' ? '🍏' : (provider === 'guest' ? '⚡' : '💼');
+      const newAcc = {
+        id: 'acc_' + Date.now(),
+        name,
+        email,
+        provider,
+        avatar,
+        role: provider === 'apple' ? 'Apple ID Account' : 'Nomad / Business Workspace'
+      };
+
+      if (!appState.accounts) appState.accounts = [];
+      appState.accounts.push(newAcc);
+
+      // Switch to new account automatically
+      appState.user = {
+        isLoggedIn: true,
+        id: newAcc.id,
+        name: newAcc.name,
+        email: newAcc.email,
+        avatar: newAcc.avatar,
+        provider: newAcc.provider,
+        plan: 'Pro Enterprise'
+      };
+
+      persistState();
+      closeAddAccountDialog();
+      updateUserProfileUI();
+      showToastNotification("Account Added", `Created and switched to ${name}.`, "good", "👤");
+      playChime('success');
+    }
+
+    function removeAccount(accId) {
+      if (confirm("Remove this account profile from your device list?")) {
+        appState.accounts = (appState.accounts || []).filter(a => a.id !== accId);
+        persistState();
+        renderAccountsList();
+        showToastNotification("Removed", "Account removed from device switcher.", "info", "🗑️");
+      }
+    }
+
+    // ========================================================
+    // DEDICATED SETTINGS WINDOW MODAL CONTROLLER
+    // ========================================================
+    function openSettingsWindow(tab = 'account') {
+      const modal = document.getElementById('settingsWindowModal');
+      if (!modal) return;
+      modal.classList.remove('hide');
+      switchSettingsWinTab(tab);
+      renderSettingsWinLanguages();
+      renderSettingsWinCurrencies();
+      refreshAppPermissionsStatus();
+      renderSystemDiagnostics();
+      renderAccountsList();
+    }
+
+    function closeSettingsWindow() {
+      const modal = document.getElementById('settingsWindowModal');
+      if (modal) modal.classList.add('hide');
+    }
+
+    function switchSettingsWinTab(tabId) {
+      activeSettingsWinTab = tabId;
+
+      // Update sidebar buttons
+      document.querySelectorAll('.settings-window-sidebar .win-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.id === 'winTabBtn-' + tabId);
+      });
+
+      // Update content panels
+      document.querySelectorAll('.settings-window-content .win-panel').forEach(panel => {
+        panel.classList.toggle('hide', panel.id !== 'winPanel-' + tabId);
+      });
+
+      if (tabId === 'language') renderSettingsWinLanguages();
+      if (tabId === 'currency') renderSettingsWinCurrencies();
+      if (tabId === 'permissions') refreshAppPermissionsStatus();
+      if (tabId === 'account') renderAccountsList();
+      if (tabId === 'about') renderSystemDiagnostics();
+    }
+
+    function renderSettingsWinLanguages() {
+      const grid = document.getElementById('winLangGrid');
+      if (!grid) return;
+
+      const active = (appState.language || 'en').toLowerCase();
+      grid.innerHTML = GLOBAL_LANGUAGES.map(l => {
+        const isCurrent = l.code === active;
+        return `
+          <div class="settings-tile ${isCurrent ? 'active' : ''}" style="cursor: pointer; padding: 10px;" onclick="setAppLanguage('${l.code}'); renderSettingsWinLanguages();">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 22px;">${l.flag}</span>
+              <div style="flex: 1;">
+                <b style="font-size: 13px;">${escapeHtml(l.native)}</b>
+                <div class="dim" style="font-size: 11px;">${escapeHtml(l.name)}</div>
+              </div>
+              ${isCurrent ? '<span style="color: var(--cyan); font-weight: bold;">✓</span>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSettingsWinCurrencies() {
+      const grid = document.getElementById('winCurGrid');
+      if (!grid) return;
+
+      const active = (appState.currency || 'COP').toUpperCase();
+      grid.innerHTML = GLOBAL_CURRENCIES.map(c => {
+        const isCurrent = c.code === active;
+        return `
+          <div class="settings-tile ${isCurrent ? 'active' : ''}" style="cursor: pointer; padding: 8px 10px;" onclick="setAppBaseCurrency('${c.code}', true); renderSettingsWinCurrencies();">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 20px;">${c.flag}</span>
+              <div style="flex: 1;">
+                <b style="font-size: 13px;">${c.code}</b>
+                <div class="dim" style="font-size: 10px;">${c.name}</div>
+              </div>
+              ${isCurrent ? '<span style="color: var(--cyan); font-weight: bold;">✓</span>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function detectUserLocationCurrency() {
+      detectLocationAndSetCurrency();
+    }
+
+    // ========================================================
+    // RATE APP & SEND FEEDBACK CONTROLLERS
+    // ========================================================
+    function setAppRatingScore(score) {
+      currentRatingScore = score;
+      
+      const labels = {
+        1: "1/5 — Needs Major Work",
+        2: "2/5 — Below Expectations",
+        3: "3/5 — Good & Usable",
+        4: "4/5 — Great Cashflow Tool",
+        5: "5/5 — Outstanding & Essential!"
+      };
+
+      const text = labels[score] || `${score}/5`;
+
+      // Update in-page rating
+      const rowInPage = document.getElementById('settingsStarRatingRow');
+      if (rowInPage) {
+        rowInPage.querySelectorAll('.star-btn').forEach(btn => {
+          const val = Number(btn.getAttribute('data-val'));
+          btn.classList.toggle('active', val <= score);
+        });
+      }
+      const textInPage = document.getElementById('settingsRatingScoreText');
+      if (textInPage) textInPage.textContent = text;
+
+      // Update modal window rating
+      const rowWin = document.getElementById('winStarRatingRow');
+      if (rowWin) {
+        rowWin.querySelectorAll('.star-btn').forEach(btn => {
+          const val = Number(btn.getAttribute('data-val'));
+          btn.classList.toggle('active', val <= score);
+        });
+      }
+      const textWin = document.getElementById('winRatingScoreText');
+      if (textWin) textWin.textContent = text;
+    }
+
+    function submitAppRatingAction() {
+      const comment = (document.getElementById('settingsRatingCommentInput')?.value || document.getElementById('winRatingCommentInput')?.value || '').trim();
+      
+      appState.rating = {
+        score: currentRatingScore,
+        comment: comment || 'Rated 5 stars',
+        date: currentIsoToday()
+      };
+
+      persistState();
+      playChime('success');
+      showToastNotification("⭐ Thank You for Rating!", `Recorded your ${currentRatingScore}/5 rating. We appreciate your support!`, "good", "⭐");
+    }
+
+    function submitAppFeedbackAction() {
+      const category = document.getElementById('settingsFeedbackCategory')?.value || document.getElementById('winFeedbackCategory')?.value || 'feature';
+      const email = document.getElementById('settingsFeedbackEmail')?.value || document.getElementById('winFeedbackEmail')?.value || (appState.user?.email || '');
+      const msg = (document.getElementById('settingsFeedbackMessage')?.value || document.getElementById('winFeedbackMessage')?.value || '').trim();
+
+      if (!msg) {
+        alert('Please enter a feedback message or feature request description.');
+        return;
+      }
+
+      if (!appState.feedback) appState.feedback = [];
+      appState.feedback.push({
+        id: 'fb_' + Date.now(),
+        category,
+        email,
+        msg,
+        date: currentIsoToday(),
+        time: new Date().toLocaleTimeString()
+      });
+
+      persistState();
+
+      // Clear textareas
+      const ta1 = document.getElementById('settingsFeedbackMessage');
+      if (ta1) ta1.value = '';
+      const ta2 = document.getElementById('winFeedbackMessage');
+      if (ta2) ta2.value = '';
+
+      playChime('success');
+      showToastNotification("🚀 Feedback Received", "Thank you! Your feedback has been sent directly to the GAP//FLOW engineering team.", "good", "💬");
+    }
+
+    // Modal background click for settings window and add account
+    document.getElementById('settingsWindowModal')?.addEventListener('click', e => {
+      if (e.target.id === 'settingsWindowModal') closeSettingsWindow();
+    });
+
+    document.getElementById('addAccountModal')?.addEventListener('click', e => {
+      if (e.target.id === 'addAccountModal') closeAddAccountDialog();
+    });
+
+    // ========================================================
+    // CSV EXPENSE LEDGER EXPORT
+    // ========================================================
+    function exportExpensesToCsv() {
+      if (!appState.expenses || appState.expenses.length === 0) {
+        alert("No expenses logged yet to export.");
+        return;
+      }
+      const headers = ["ID", "Date", "Category", "Amount", "Currency", "Merchant_or_Note"];
+      const rows = appState.expenses.map(e => [
+        `"${e.id || ''}"`,
+        `"${e.date || ''}"`,
+        `"${e.cat || ''}"`,
+        `"${e.amount || 0}"`,
+        `"${appState.currency || 'COP'}"`,
+        `"${(e.note || '').replace(/"/g, '""')}"`
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `gapflow_ledger_${currentIsoToday()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToastNotification("📊 CSV Ledger Exported", "Downloaded expense ledger spreadsheet.", "good", "📊");
+      playChime('success');
+    }
 
     // ========================================================
     // AUDIO SYNTHESIZER FOR NOTIFICATIONS & CHIMES (WEB AUDIO)
@@ -2759,7 +5328,7 @@
       localStorage.setItem("gapFlowAccent", accentKey);
       document.documentElement.setAttribute('data-accent', accentKey);
 
-      ['slate', 'blue', 'emerald', 'violet', 'amber'].forEach(a => {
+      ['slate', 'blue', 'emerald', 'violet', 'amber', 'rose', 'teal', 'indigo'].forEach(a => {
         const tile = document.getElementById('accent-tile-' + a);
         if (tile) tile.classList.toggle('active', a === accentKey);
       });
@@ -2796,12 +5365,25 @@
     }
 
     // Listen to system theme changes if set to auto
-    if (window.matchMedia) {
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (currentTheme === 'auto') {
-          applyTheme('auto');
+    try {
+      if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        if (mediaQuery && typeof mediaQuery.addEventListener === 'function') {
+          mediaQuery.addEventListener('change', () => {
+            if (currentTheme === 'auto') {
+              applyTheme('auto');
+            }
+          });
+        } else if (mediaQuery && typeof mediaQuery.addListener === 'function') {
+          mediaQuery.addListener(() => {
+            if (currentTheme === 'auto') {
+              applyTheme('auto');
+            }
+          });
         }
-      });
+      }
+    } catch (e) {
+      console.warn('matchMedia not supported:', e);
     }
 
     // ========================================================
@@ -3083,6 +5665,11 @@
         renderAiChatView();
       } else if (targetView === 'settings') {
         renderSettingsCurrencyGrid();
+        refreshAppPermissionsStatus();
+        renderSystemDiagnostics();
+        updateUserProfileUI();
+        renderAccountsList();
+        setAppRatingScore(appState.rating?.score || 5);
       }
 
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -3197,7 +5784,10 @@
         `).join('');
       }
 
-      // Draw Chart
+      // Render D3 Category Spending Pie Chart
+      renderD3CategoryPieChart();
+
+      // Draw Trajectory Chart
       drawTrajectoryChart();
     }
 
@@ -3657,6 +6247,41 @@
         } catch (e) {
           permStor.textContent = "Standard";
         }
+      }
+
+      renderSystemDiagnostics();
+    }
+
+    function renderSystemDiagnostics() {
+      const connEl = document.getElementById('diagConnection');
+      if (connEl) {
+        connEl.textContent = navigator.onLine ? '🟢 Online (Connected)' : '🔴 Offline Mode';
+      }
+
+      const screenEl = document.getElementById('diagScreen');
+      if (screenEl) {
+        screenEl.textContent = `${window.innerWidth} x ${window.innerHeight} (Screen: ${window.screen.width}x${window.screen.height}, DPR: ${window.devicePixelRatio || 1})`;
+      }
+
+      const storageEl = document.getElementById('diagStorage');
+      if (storageEl) {
+        try {
+          const stateStr = JSON.stringify(appState);
+          const bytes = new Blob([stateStr]).size;
+          storageEl.textContent = `${(bytes / 1024).toFixed(1)} KB (LocalStorage active)`;
+        } catch(e) {
+          storageEl.textContent = 'Active (Local Vault)';
+        }
+      }
+
+      const themeEl = document.getElementById('diagThemeMeta');
+      if (themeEl) {
+        themeEl.textContent = `${currentTheme.toUpperCase()} • Accent: ${currentAccent} • Font: ${currentFont}`;
+      }
+
+      const agentEl = document.getElementById('diagUserAgent');
+      if (agentEl) {
+        agentEl.textContent = navigator.userAgent;
       }
     }
 
@@ -4470,7 +7095,7 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
     }
 
     // Modal background click
-    document.getElementById('appModal').addEventListener('click', e => {
+    document.getElementById('appModal')?.addEventListener('click', e => {
       if (e.target.id === 'appModal') closeAppModal();
     });
 
@@ -4943,6 +7568,284 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
     }
 
     // ========================================================
+    // D3 CATEGORY SPENDING PIE / DONUT CHART ENGINE
+    // ========================================================
+    const CATEGORY_COLOR_PALETTE = {
+      Living: '#0284c7', // Sky Cyan
+      MacBook: '#8b5cf6', // Violet
+      ReturnHome: '#10b981', // Emerald Green
+      Emergency: '#f59e0b', // Amber
+      SAT: '#ec4899', // Pink
+      Investment: '#06b6d4', // Cyan Teal
+      Skills: '#6366f1', // Indigo
+      Food: '#f97316', // Orange
+      Healthcare: '#14b8a6', // Teal
+      Travel: '#3b82f6', // Blue
+      Entertainment: '#a855f7', // Purple
+      Utilities: '#64748b' // Slate
+    };
+
+    function getAvailableExpenseMonths() {
+      const set = new Set();
+      set.add(currentIsoMonth());
+      if (appState.expenses && Array.isArray(appState.expenses)) {
+        appState.expenses.forEach(e => {
+          if (e.date && e.date.length >= 7) {
+            set.add(e.date.slice(0, 7));
+          }
+        });
+      }
+      return Array.from(set).sort().reverse();
+    }
+
+    function renderD3CategoryPieChart() {
+      const container = document.getElementById('d3PieChartContainer');
+      if (!container) return;
+
+      // Populate Month Selector with all available expense months
+      const monthFilterSelect = document.getElementById('dashPieMonthFilter');
+      const availableMonths = getAvailableExpenseMonths();
+      const currentSelected = monthFilterSelect && monthFilterSelect.value ? monthFilterSelect.value : currentIsoMonth();
+      
+      if (monthFilterSelect) {
+        monthFilterSelect.innerHTML = availableMonths.map(m => `
+          <option value="${m}" ${m === currentSelected ? 'selected' : ''}>Cycle: ${m}${m === currentIsoMonth() ? ' (Active)' : ''}</option>
+        `).join('');
+      }
+
+      const selectedMonth = monthFilterSelect ? monthFilterSelect.value || currentIsoMonth() : currentIsoMonth();
+
+      // Update badge
+      const badge = document.getElementById('dashPieMonthBadge');
+      if (badge) {
+        badge.textContent = selectedMonth === currentIsoMonth() ? `Active Cycle (${selectedMonth})` : `Cycle: ${selectedMonth}`;
+      }
+
+      // Filter expenses for this cycle
+      const cycleExpenses = appState.expenses.filter(e => e.date && e.date.startsWith(selectedMonth));
+      
+      // Aggregate by category
+      const categoryTotals = {};
+      cycleExpenses.forEach(e => {
+        const cat = e.cat || 'Other';
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + (Number(e.amount) || 0);
+      });
+
+      const totalSpentInCycle = Object.values(categoryTotals).reduce((a, b) => a + b, 0);
+
+      // If no expenses in selected month, show responsive empty state card
+      if (totalSpentInCycle === 0) {
+        container.innerHTML = `
+          <div class="d3-empty-pie-card" style="grid-column: 1 / -1;">
+            <div style="font-size: 36px; margin-bottom: 8px;">🥧</div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--text);">${t('dash_pie_empty_title', 'No Expenses Recorded in ' + selectedMonth)}</div>
+            <p class="muted" style="max-width: 440px; margin: 6px auto 14px; font-size: 13px;">
+              ${t('dash_pie_empty_desc', 'Log your first expense or click "Seed Demo Data" to visualize spending distribution across Living, MacBook, Travel, and more.')}
+            </p>
+            <div class="row" style="justify-content: center; gap: 8px;">
+              <button class="primary sm" onclick="openExpenseDialog()">＋ ${t('btn_add_expense', 'Log Expense')}</button>
+              <button class="secondary sm" onclick="seedSampleExpenses()">✨ ${t('dash_pie_seed_btn', 'Seed Demo Data')}</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Build dataset
+      const palette = ['#0284c7', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#6366f1', '#f97316', '#14b8a6', '#84cc16'];
+      const data = Object.entries(categoryTotals)
+        .map(([cat, amount], idx) => {
+          const color = CATEGORY_COLOR_PALETTE[cat] || palette[idx % palette.length];
+          const pct = ((amount / totalSpentInCycle) * 100).toFixed(1);
+          return { category: cat, amount, pct, color };
+        })
+        .sort((a, b) => b.amount - a.amount);
+
+      // Prepare HTML layout container
+      container.innerHTML = `
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; min-height: 290px;">
+          <svg id="d3PieSvg" class="d3-svg-stage" viewBox="0 0 340 340"></svg>
+        </div>
+        <div class="d3-legend-grid" id="d3LegendContainer"></div>
+      `;
+
+      // Render Legend Panel
+      const legendContainer = document.getElementById('d3LegendContainer');
+      if (legendContainer) {
+        legendContainer.innerHTML = data.map((d, i) => `
+          <div class="d3-legend-item" id="d3-leg-${i}" 
+               onmouseenter="highlightPieSlice(${i})" 
+               onmouseleave="unhighlightPieSlice(${i})"
+               onclick="filterExpensesByCategory('${escapeHtml(d.category)}')"
+               title="Click to view all ${escapeHtml(d.category)} expenses in Ledger">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              <div class="d3-legend-color-dot" style="background: ${d.color}; box-shadow: 0 0 6px ${d.color}88;"></div>
+              <div style="min-width: 0;">
+                <div style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(d.category)}
+                </div>
+                <div class="dim" style="font-size: 11px;">${d.pct}% of cycle</div>
+              </div>
+            </div>
+            <div style="text-align: right; margin-left: 8px; flex-shrink: 0;">
+              <b style="font-size: 13px; color: var(--text);">${fmtCop(d.amount)}</b>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Draw D3 Donut Slices
+      if (typeof d3 === 'undefined') {
+        console.warn('D3 script loading...');
+        return;
+      }
+
+      const svg = d3.select('#d3PieSvg');
+      svg.selectAll('*').remove();
+
+      const width = 340;
+      const height = 340;
+      const radius = 145;
+      const innerRadius = 78;
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+      const pie = d3.pie()
+        .value(d => d.amount)
+        .sort(null)
+        .padAngle(0.025);
+
+      const arc = d3.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(radius)
+        .cornerRadius(6);
+
+      const arcs = g.selectAll('.d3-pie-slice')
+        .data(pie(data))
+        .enter()
+        .append('g')
+        .attr('class', 'd3-pie-slice')
+        .attr('id', (d, i) => `d3-slice-${i}`);
+
+      // Slice paths
+      arcs.append('path')
+        .attr('d', arc)
+        .attr('fill', d => d.data.color)
+        .attr('stroke', 'var(--surface)')
+        .attr('stroke-width', 2)
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event, d) {
+          const idx = data.indexOf(d.data);
+          highlightPieSlice(idx);
+          
+          // Update center text to hovered category
+          const centerTitle = document.getElementById('d3CenterTitleText');
+          const centerVal = document.getElementById('d3CenterValText');
+          const centerSub = document.getElementById('d3CenterSubText');
+          if (centerTitle) centerTitle.textContent = d.data.category.toUpperCase();
+          if (centerVal) {
+            centerVal.textContent = fmtCop(d.data.amount);
+            centerVal.style.fill = d.data.color;
+          }
+          if (centerSub) centerSub.textContent = `${d.data.pct}% of total`;
+        })
+        .on('mouseleave', function(event, d) {
+          const idx = data.indexOf(d.data);
+          unhighlightPieSlice(idx);
+
+          // Reset center text to total
+          const centerTitle = document.getElementById('d3CenterTitleText');
+          const centerVal = document.getElementById('d3CenterValText');
+          const centerSub = document.getElementById('d3CenterSubText');
+          if (centerTitle) centerTitle.textContent = t('dash_pie_total_spent', 'TOTAL SPENT');
+          if (centerVal) {
+            centerVal.textContent = fmtCop(totalSpentInCycle);
+            centerVal.style.fill = 'var(--text)';
+          }
+          if (centerSub) centerSub.textContent = `${cycleExpenses.length} transaction${cycleExpenses.length === 1 ? '' : 's'}`;
+        })
+        .on('click', function(event, d) {
+          filterExpensesByCategory(d.data.category);
+        });
+
+      // Center Donut text
+      const centerGroup = g.append('g')
+        .attr('class', 'd3-donut-center')
+        .attr('pointer-events', 'none');
+
+      centerGroup.append('text')
+        .attr('class', 'd3-center-title')
+        .attr('id', 'd3CenterTitleText')
+        .attr('y', -20)
+        .text(t('dash_pie_total_spent', 'TOTAL SPENT'));
+
+      centerGroup.append('text')
+        .attr('class', 'd3-center-value')
+        .attr('id', 'd3CenterValText')
+        .attr('y', 6)
+        .text(fmtCop(totalSpentInCycle));
+
+      centerGroup.append('text')
+        .attr('class', 'd3-center-sub')
+        .attr('id', 'd3CenterSubText')
+        .attr('y', 25)
+        .text(`${cycleExpenses.length} transaction${cycleExpenses.length === 1 ? '' : 's'}`);
+    }
+
+    function highlightPieSlice(index) {
+      const slice = document.getElementById(`d3-slice-${index}`);
+      if (slice) slice.classList.add('highlighted');
+      const leg = document.getElementById(`d3-leg-${index}`);
+      if (leg) leg.classList.add('active');
+    }
+
+    function unhighlightPieSlice(index) {
+      const slice = document.getElementById(`d3-slice-${index}`);
+      if (slice) slice.classList.remove('highlighted');
+      const leg = document.getElementById(`d3-leg-${index}`);
+      if (leg) leg.classList.remove('active');
+    }
+
+    function filterExpensesByCategory(cat) {
+      switchPage('expenses');
+      const filterCat = document.getElementById('filterLedgerCat');
+      if (filterCat) {
+        filterCat.value = cat;
+        renderExpensesView();
+      }
+    }
+
+    function seedSampleExpenses() {
+      const m = currentIsoMonth();
+      const baseSalary = Number(appState.salary) || 2300000;
+      
+      const sampleItems = [
+        { date: `${m}-02`, cat: 'Living', amount: Math.round(baseSalary * 0.22), note: 'Monthly Apartment Rent & Utilities' },
+        { date: `${m}-05`, cat: 'Living', amount: Math.round(baseSalary * 0.08), note: 'Supermarket Groceries & Essentials' },
+        { date: `${m}-08`, cat: 'MacBook', amount: Math.round(baseSalary * 0.15), note: 'M3 Pro Tech Hardware Fund' },
+        { date: `${m}-12`, cat: 'ReturnHome', amount: Math.round(baseSalary * 0.10), note: 'Flight Deposit & Travel Savings' },
+        { date: `${m}-16`, cat: 'Emergency', amount: Math.round(baseSalary * 0.05), note: 'Emergency Reserve Buffer' },
+        { date: `${m}-19`, cat: 'SAT', amount: Math.round(baseSalary * 0.04), note: 'Study Guides & Prep Practice Tests' }
+      ];
+
+      sampleItems.forEach(item => {
+        appState.expenses.push({
+          id: 'tx_seed_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          date: item.date,
+          cat: item.cat && appState.rules[item.cat] ? item.cat : Object.keys(appState.rules)[0] || 'Living',
+          amount: item.amount,
+          note: item.note
+        });
+      });
+
+      persistState();
+      renderApp();
+      showToastNotification("✨ Sample Data Seeded", `Added ${sampleItems.length} transactions to visualize spending distribution.`, "good", "🥧");
+      playChime('success');
+    }
+
+    // ========================================================
     // CHART RENDERING (DASHBOARD TRAJECTORY)
     // ========================================================
     function drawTrajectoryChart() {
@@ -5168,7 +8071,24 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
       setLayoutDensity(currentDensity);
       setFontSizeScale(currentFontSize);
 
+      // Initialize Country, Language & Internationalization
+      updateCountryUI();
+      renderSettingsLanguageGrid();
+      applyTranslations();
+
       // Populate Settings inputs if elements exist
+      const selectDateFmt = document.getElementById('selectDateFormat');
+      if (selectDateFmt && appState.dateFormat) selectDateFmt.value = appState.dateFormat;
+
+      const selectNumFmt = document.getElementById('selectNumberFormat');
+      if (selectNumFmt && appState.numberFormat) selectNumFmt.value = appState.numberFormat;
+
+      const selectPayday = document.getElementById('selectPaydayDay');
+      if (selectPayday && appState.paydayDay) selectPayday.value = String(appState.paydayDay);
+
+      const selectSav = document.getElementById('selectSavingsGoalPercent');
+      if (selectSav && appState.savingsGoalPercent) selectSav.value = String(appState.savingsGoalPercent);
+
       if (appState.reminders) {
         const checkSalary = document.getElementById('checkSalaryReminder');
         if (checkSalary) checkSalary.checked = appState.reminders.salaryCycleEnabled !== false;
@@ -5192,6 +8112,9 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
       renderApp();
       loadLiveForexRates();
       refreshAppPermissionsStatus();
+      updateUserProfileUI();
+      setAppRatingScore(appState.rating?.score || 5);
+      checkAuthState();
 
       // Background live forex sync every 60 seconds
       setInterval(() => loadLiveForexRates(false), 60000);
@@ -5269,6 +8192,7 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
           if (activePageId === 'dashboard') {
+            renderD3CategoryPieChart();
             drawTrajectoryChart();
           }
         }, 150);
