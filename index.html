@@ -3591,8 +3591,17 @@
       try {
         const url = isManual ? '/api/rates?refresh=1' : '/api/rates';
         const res = await fetch(url);
-        const data = await res.json();
-        if (data && data.rates) {
+        let data = null;
+        const contentType = res.headers.get('content-type') || '';
+        
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const raw = await res.text();
+          try { data = JSON.parse(raw); } catch (e) {}
+        }
+
+        if (data && data.rates && typeof data.rates === 'object') {
           forexData = data.rates;
           forexBase = data.base || 'USD';
           forexIsLive = !data.isFallback;
@@ -3894,8 +3903,30 @@
           })
         });
 
-        const data = await res.json();
-        const reply = data.reply || data.error || 'I reviewed your financial trajectory.';
+        let data = null;
+        const contentType = res.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const rawText = await res.text();
+          try {
+            data = JSON.parse(rawText);
+          } catch (e) {
+            console.warn('Received non-JSON response from server, switching to local advisor engine.');
+          }
+        }
+
+        let reply = '';
+        let source = 'gemini-3.7-flash';
+
+        if (data && (data.reply || data.error)) {
+          reply = data.reply || data.error;
+          source = data.source || 'gemini-3.7-flash';
+        } else {
+          reply = generateClientFinancialAdvice(text, financialContext);
+          source = 'local-intelligence';
+        }
 
         const typing = document.getElementById('aiTypingBubble');
         if (typing) typing.remove();
@@ -3906,20 +3937,26 @@
 
         const engineBadge = document.getElementById('aiActiveEngineBadge');
         if (engineBadge) {
-          engineBadge.textContent = data.source === 'gemini-3.7-flash' ? '✨ Gemini 3.7 Flash' : '🤖 GAP//AI Strategy Engine';
+          engineBadge.textContent = source === 'gemini-3.7-flash' ? '✨ Gemini 3.7 Flash' : '🤖 GAP//AI Strategy Engine';
         }
 
       } catch (err) {
-        console.error('AI chat request failed:', err);
+        console.warn('AI network fetch failed, using local strategy engine:', err);
         const typing = document.getElementById('aiTypingBubble');
         if (typing) typing.remove();
 
+        const localReply = generateClientFinancialAdvice(text, financialContext);
         appState.chat.push({
           role: 'model',
-          text: `⚠️ Network error: ${err.message}. Please try again.`
+          text: localReply
         });
         persistState();
         renderAiChatView();
+
+        const engineBadge = document.getElementById('aiActiveEngineBadge');
+        if (engineBadge) {
+          engineBadge.textContent = '🤖 GAP//AI Strategy Engine';
+        }
       } finally {
         if (sendBtn) {
           sendBtn.disabled = false;
@@ -3927,6 +3964,106 @@
         }
         if (input) input.focus();
       }
+    }
+
+    // High-Intelligence Client-Side Financial Strategy Engine
+    function generateClientFinancialAdvice(message, ctx) {
+      const lower = (message || '').toLowerCase();
+      const salary = Number(ctx.salary) || 2300000;
+      const spent = Number(ctx.totalSpent) || 0;
+      const unspent = Number(ctx.unallocated) || (salary - spent);
+      const livingAlloc = ctx.allocations?.Living || 1000000;
+      const livingSpent = ctx.spentByCategory?.Living || 0;
+      const livingRemaining = Math.max(0, livingAlloc - livingSpent);
+
+      // Extract any numeric amount mentioned in the user prompt
+      const matches = message.match(/\d+[\d,.]*/g);
+      let val = 0;
+      if (matches && matches.length > 0) {
+        val = Number(matches[0].replace(/[.,]/g, ''));
+      }
+
+      if (lower.includes('afford') || lower.includes('spend') || lower.includes('buy') || lower.includes('cost') || lower.includes('purchase')) {
+        if (val > 0) {
+          const afterPurchase = livingRemaining - val;
+          const totalAfter = unspent - val;
+
+          if (afterPurchase >= 0) {
+            return `### 📊 Affordability Analysis: COP ${val.toLocaleString('es-CO')}
+- **Living Bucket Allocation**: COP ${livingAlloc.toLocaleString('es-CO')}
+- **Spent in Living So Far**: COP ${livingSpent.toLocaleString('es-CO')}
+- **Available in Living Before Purchase**: COP ${livingRemaining.toLocaleString('es-CO')}
+- **Living Balance After Purchase**: **COP ${afterPurchase.toLocaleString('es-CO')}**
+- **Overall Unspent Salary Remaining**: **COP ${totalAfter.toLocaleString('es-CO')}**
+
+✅ **Verdict: Affordable & Safe**
+This purchase fits within your monthly Living allocation. No adjustments or emergency transfers needed.`;
+          } else {
+            const deficit = Math.abs(afterPurchase);
+            return `### ⚠️ Budget Overrun Advisory: COP ${val.toLocaleString('es-CO')}
+- **Living Bucket Allocation**: COP ${livingAlloc.toLocaleString('es-CO')}
+- **Current Spent in Living**: COP ${livingSpent.toLocaleString('es-CO')}
+- **Available Before Purchase**: COP ${livingRemaining.toLocaleString('es-CO')}
+- **Shortfall for Living Bucket**: **COP ${deficit.toLocaleString('es-CO')}**
+- **Overall Total Salary Left**: COP ${unspent.toLocaleString('es-CO')}
+
+⚠️ **Verdict: Exceeds Living Allocation**
+**Strategic Recommendations:**
+1. **Reallocate**: Transfer COP ${deficit.toLocaleString('es-CO')} from your MacBook or Discretionary bucket.
+2. **Postpone**: Defer this expense until your next salary cycle on the 25th.
+3. **Split**: Pay half now (COP ${(val / 2).toLocaleString('es-CO')}) and half next cycle.`;
+          }
+        } else {
+          return `To calculate precise affordability, please mention the amount (for example: *"Can I afford COP 180,000 for groceries and dinner?"*). Your current monthly salary is **COP ${salary.toLocaleString('es-CO')}** with **COP ${unspent.toLocaleString('es-CO')}** unspent.`;
+        }
+      }
+
+      if (lower.includes('macbook') || lower.includes('tech') || lower.includes('laptop')) {
+        const macTarget = 5500000;
+        const techAlloc = ctx.allocations?.Tech || 300000;
+        const monthsNeeded = Math.ceil(macTarget / Math.max(techAlloc, 100000));
+        return `### 💻 MacBook Upgrade Strategy
+- **MacBook Target Price**: ~COP ${macTarget.toLocaleString('es-CO')}
+- **Current Monthly Tech Allocation**: COP ${techAlloc.toLocaleString('es-CO')}/month
+- **Estimated Timeline**: **~${monthsNeeded} months** at current savings velocity.
+- **Acceleration Tip**: Allocating an extra COP 150k/month from unallocated surplus will reduce your wait by ${(monthsNeeded - Math.ceil(macTarget / (techAlloc + 150000)))} months.`;
+      }
+
+      if (lower.includes('currency') || lower.includes('kes') || lower.includes('shilling') || lower.includes('exchange') || lower.includes('forex') || lower.includes('rate') || lower.includes('kenya') || lower.includes('colombia')) {
+        const rateKes = forexData?.KES || 129.5;
+        const rateCop = forexData?.COP || 4120.5;
+        const copPerKes = (rateCop / rateKes).toFixed(1);
+        return `### 💱 Real-Time Currency Intelligence
+- **Live Benchmark**: 1 KES ≈ **${copPerKes} COP** | 1 USD ≈ **${rateCop.toLocaleString()} COP**
+- **Conversion Examples**:
+  - **COP 100,000** ≈ **${Math.round(100000 / (rateCop / rateKes)).toLocaleString()} KES**
+  - **COP 1,000,000** ≈ **${Math.round(1000000 / (rateCop / rateKes)).toLocaleString()} KES** (~$${Math.round(1000000 / rateCop)} USD)
+- **Travel Strategy**: When sending or spending money between Colombia and Kenya, use M-Pesa or low-fee digital cards to avoid double bank conversion fees. Check the **Currency** tab for live interactive calculator.`;
+      }
+
+      if (lower.includes('salary') || lower.includes('bucket') || lower.includes('allocat') || lower.includes('budget')) {
+        const allocSummary = Object.entries(ctx.allocations || {})
+          .map(([k, v]) => `- **${k}**: COP ${Number(v).toLocaleString('es-CO')} (${Math.round((Number(v)/salary)*100)}%)`)
+          .join('\n');
+        return `### ⚡ Salary Allocation Architecture
+- **Monthly Income**: COP ${salary.toLocaleString('es-CO')}
+- **Category Allocations**:
+${allocSummary}
+- **Total Spent This Month**: COP ${spent.toLocaleString('es-CO')}
+- **Unspent Balance**: **COP ${unspent.toLocaleString('es-CO')}**
+
+You can customize percentage distributions anytime in the **Budget** tab.`;
+      }
+
+      return `### 🧠 GAP//AI Financial Summary
+- **Current Salary**: COP ${salary.toLocaleString('es-CO')}
+- **Month-to-Date Spending**: COP ${spent.toLocaleString('es-CO')} (${ctx.healthStatus || 'GREEN'} Status)
+- **Unspent Buffer**: **COP ${unspent.toLocaleString('es-CO')}**
+
+**How can I assist your financial strategy today?**
+- *"Can I afford COP 250,000 for weekend dining?"*
+- *"How should I optimize my MacBook savings?"*
+- *"Convert COP 500,000 to Kenyan Shillings (KES)"*`;
     }
 
     function askAiQuick(promptText) {

@@ -52,12 +52,7 @@ function getGeminiClient() {
   }
   if (!geminiClient) {
     geminiClient = new GoogleGenAI({
-      apiKey: apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build'
-        }
-      }
+      apiKey: apiKey
     });
   }
   return geminiClient;
@@ -311,6 +306,14 @@ ${bucketBreakdown}
   }
 });
 
+// Catch-all for undefined /api/* routes so they NEVER return HTML
+app.all('/api/*', (req, res) => {
+  res.status(404).json({
+    error: 'API endpoint not found',
+    path: req.originalUrl
+  });
+});
+
 // Serve static assets from project root
 app.use(express.static(__dirname, {
   setHeaders: (res, filePath) => {
@@ -320,7 +323,7 @@ app.use(express.static(__dirname, {
   }
 }));
 
-// Fallback to index.html for SPA routing
+// Fallback to index.html for SPA frontend routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
