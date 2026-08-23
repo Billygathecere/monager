@@ -1372,6 +1372,72 @@
       border-radius: 10px;
     }
 
+    /* PDF UPLOAD DROPZONE */
+    .pdf-dropzone {
+      border: 2px dashed var(--card-border);
+      border-radius: 14px;
+      padding: 24px 16px;
+      text-align: center;
+      background: var(--btn-secondary-bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .pdf-dropzone:hover, .pdf-dropzone.dragover {
+      border-color: var(--cyan);
+      background: var(--cyan-light);
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .pdf-dropzone-icon {
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    /* BUDGET CARD ACTIONS & CURRENCY PILL */
+    .budget-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--card-border);
+      gap: 6px;
+    }
+    .currency-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--btn-secondary-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 99px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    .currency-pill-btn:hover {
+      border-color: var(--cyan);
+      background: var(--btn-secondary-hover);
+    }
+
+    .extracted-cat-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .extracted-cat-row input {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
     .hide { display: none !important; }
   </style>
 </head>
@@ -1428,6 +1494,11 @@
 
       <!-- HEADER QUICK ACTION BUTTONS -->
       <div class="navbar-actions">
+        <button id="appCurrencyHeaderBtn" class="currency-pill-btn" onclick="openCurrencySwitcherDialog()" title="Change App Base Currency" aria-label="Change App Base Currency">
+          <span id="appCurrencyHeaderFlag">🇨🇴</span>
+          <span id="appCurrencyHeaderCode">COP</span>
+          <span style="font-size: 10px; opacity: 0.7;">▾</span>
+        </button>
         <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleThemeMode()" title="Switch Light/Dark Mode" aria-label="Toggle Theme Mode">
           <span id="themeToggleIcon">☀️</span>
           <span id="themeToggleLabel">Light</span>
@@ -1458,11 +1529,12 @@
         <div class="space-between">
           <div>
             <span class="badge cyan">Monthly Flow Cycle</span>
-            <div class="muted" style="margin-top: 4px;">Active Monthly Salary Base</div>
+            <div class="muted" style="margin-top: 4px;">Active Monthly Salary Base (<span id="dashCurCode">COP</span>)</div>
             <div class="big-num" id="dashSalText">COP 2,300,000</div>
           </div>
           <div class="row">
             <button class="primary" onclick="openSalaryDialog()">💵 Enter / Update Salary</button>
+            <button class="secondary" onclick="openCurrencySwitcherDialog()">🌐 Change Currency</button>
             <button class="secondary" onclick="switchPage('notifications')">🔔 25th Reminders</button>
           </div>
         </div>
@@ -1499,7 +1571,10 @@
         <section class="card">
           <div class="space-between" style="margin-bottom: 12px;">
             <h2>🎯 Budget Bucket Health</h2>
-            <button class="sm secondary" onclick="switchPage('budget')">Adjust Rules →</button>
+            <div class="row">
+              <button class="sm primary" onclick="openAddBudgetItemDialog()">＋ Add Item</button>
+              <button class="sm secondary" onclick="switchPage('budget')">Manage Budget →</button>
+            </div>
           </div>
           <div id="dashBucketsProgress"></div>
         </section>
@@ -1538,7 +1613,7 @@
             <p class="muted" style="margin-bottom: 0;">Month-over-month expenses plotted against salary buffer limit</p>
           </div>
           <div class="row" style="gap: 8px;">
-            <span class="badge cyan">● Expenses (COP)</span>
+            <span class="badge cyan" id="chartExpensesBadge">● Expenses</span>
             <span class="badge" style="border-style: dashed; color: var(--amber);">╌ Salary Baseline</span>
             <span class="badge" id="dashTrendBadge">Velocity</span>
           </div>
@@ -1559,11 +1634,13 @@
       <section class="card highlight">
         <div class="space-between">
           <div>
-            <h2>⚡ Smart Salary Auto-Distributor</h2>
-            <p>Your target bucket weights automatically scale proportionally whenever your salary updates.</p>
+            <h2>⚡ Smart Salary Auto-Distributor & Budget Manager</h2>
+            <p>Add, remove, or customize categories. Target bucket weights automatically scale proportionally whenever your salary updates.</p>
           </div>
           <div class="row">
-            <button class="primary" onclick="openRulesDialog()">⚙️ Customize Target Weights</button>
+            <button class="primary" onclick="openAddBudgetItemDialog()">＋ Add Budget Category</button>
+            <button class="secondary" onclick="openPdfBudgetUploadDialog()">📄 Upload PDF Budget</button>
+            <button class="secondary" onclick="openRulesDialog()">⚙️ Customize Target Weights</button>
             <button class="secondary" onclick="resetToDefaults()">↺ Reset Defaults</button>
           </div>
         </div>
@@ -1571,6 +1648,27 @@
 
       <!-- ALLOCATION BUCKET CARDS -->
       <div class="grid-3" id="budgetCardsGrid"></div>
+
+      <!-- PDF BUDGET UPLOAD SECTION -->
+      <section class="card" style="margin-top: 14px;">
+        <div class="space-between" style="margin-bottom: 10px;">
+          <div>
+            <h2>📄 Import Budget from PDF Document</h2>
+            <p class="muted">Upload your monthly budget sheet, bank statement, or finance plan PDF. GAP//AI will read the document, detect your income & categories, and automatically update your budget allocations.</p>
+          </div>
+          <span class="badge cyan">✨ AI PDF Reader</span>
+        </div>
+
+        <div id="pdfDropzone" class="pdf-dropzone" onclick="document.getElementById('pdfFileInput').click()">
+          <input type="file" id="pdfFileInput" accept=".pdf,application/pdf" style="display: none;" onchange="handlePdfFileInputChange(event)">
+          <div class="pdf-dropzone-icon">📄</div>
+          <div style="font-weight: 700; font-size: 14px;">Drag and drop your Budget PDF here, or tap to browse</div>
+          <div class="dim" style="font-size: 12px;">Supports PDF budgets, spreadsheets exported as PDF, bank summaries, invoices</div>
+          <button type="button" class="primary sm" style="margin-top: 6px; pointer-events: none;">📂 Select PDF File</button>
+        </div>
+
+        <div id="pdfUploadStatus" class="dim" style="margin-top: 8px; text-align: center; display: none;"></div>
+      </section>
 
       <!-- STRATEGY BLUEPRINTS -->
       <section class="card">
@@ -2026,12 +2124,40 @@
 
       </section>
 
-      <!-- 2. TYPOGRAPHY & PHONE FONT ADOPTION -->
+      <!-- 2. APP BASE CURRENCY SELECTOR -->
+      <section class="card" style="margin-bottom: 14px;">
+        <div class="space-between">
+          <div>
+            <h2>🌐 App Base Currency</h2>
+            <p>Select the primary currency used throughout the app for salary, budget categories, and expense records. Switch seamlessly from COP to KES, USD, EUR, GBP, or any global currency.</p>
+          </div>
+          <span class="badge cyan" id="settingsActiveCurrencyBadge">🇨🇴 COP (Colombian Peso)</span>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="dim" style="text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Popular Currencies</div>
+          <div class="settings-option-grid" id="settingsCurrencyGrid">
+            <!-- Dynamically populated / styled -->
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; padding: 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--card-border);" class="space-between">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="convertExistingCurCheckbox" checked style="cursor: pointer;">
+            <label for="convertExistingCurCheckbox" style="font-size: 13px; cursor: pointer;">
+              <b>Auto-convert existing financial amounts</b> using live exchange rates when changing currency
+            </label>
+          </div>
+          <button class="primary sm" onclick="openCurrencySwitcherDialog()">🌐 Custom Currency Switcher</button>
+        </div>
+      </section>
+
+      <!-- 3. TYPOGRAPHY & PHONE FONT ADOPTION -->
       <section class="card" style="margin-bottom: 14px;">
         <div class="space-between">
           <div>
             <h2>🔤 Typography & Phone System Font Adoption</h2>
-            <p>Selecting <b>Adopt Phone Font</b> ensures the typography automatically matches your device's native OS font (San Francisco on iOS/macOS, Roboto/Samsung One on Android).</p>
+            <p>Selecting <b>Adopt Phone Font</b> ensures the typography automatically matches your device's native OS font (San Francisco on iOS/macOS, Roboto/Samsung One on Android) for maximum legibility and native feel.</p>
           </div>
           <span class="badge" id="activeFontBadge">📱 Phone Font</span>
         </div>
@@ -2040,17 +2166,27 @@
           <div id="font-tile-phone" class="settings-tile active" onclick="setAppFont('phone')">
             <span style="font-size: 20px;">📱</span>
             <div class="settings-tile-title">Adopt Phone Font</div>
-            <div class="settings-tile-sub">Native iOS / Android font</div>
+            <div class="settings-tile-sub">System Default (iOS / Android)</div>
+          </div>
+          <div id="font-tile-ios" class="settings-tile" onclick="setAppFont('ios')">
+            <span style="font-size: 20px;">🍎</span>
+            <div class="settings-tile-title">Apple SF Pro</div>
+            <div class="settings-tile-sub">iOS & macOS Native Typography</div>
+          </div>
+          <div id="font-tile-android" class="settings-tile" onclick="setAppFont('android')">
+            <span style="font-size: 20px;">🤖</span>
+            <div class="settings-tile-title">Android Roboto</div>
+            <div class="settings-tile-sub">Android & One UI System Font</div>
           </div>
           <div id="font-tile-sans" class="settings-tile" onclick="setAppFont('sans')">
             <span style="font-size: 20px;">🔤</span>
             <div class="settings-tile-title">Modern Sans</div>
-            <div class="settings-tile-sub">Plus Jakarta / Inter</div>
+            <div class="settings-tile-sub">Plus Jakarta Sans</div>
           </div>
           <div id="font-tile-mono" class="settings-tile" onclick="setAppFont('mono')">
             <span style="font-size: 20px;">💻</span>
             <div class="settings-tile-title">Tech Mono</div>
-            <div class="settings-tile-sub">Code / Monospace</div>
+            <div class="settings-tile-sub">JetBrains Code Monospace</div>
           </div>
           <div id="font-tile-serif" class="settings-tile" onclick="setAppFont('serif')">
             <span style="font-size: 20px;">📰</span>
@@ -2399,6 +2535,7 @@
     // STATE INITIALIZATION
     let appState = JSON.parse(localStorage.getItem("gapFlowState") || "null") || {
       salary: 2300000,
+      currency: 'COP',
       rules: { ...INITIAL_RULES },
       expenses: [],
       salaryMonths: {},
@@ -2430,6 +2567,7 @@
     };
 
     // Ensure state integrity
+    if (!appState.currency) appState.currency = 'COP';
     if (!appState.rules) appState.rules = { ...INITIAL_RULES };
     if (!appState.expenses) appState.expenses = [];
     if (!appState.reminders) {
@@ -2485,6 +2623,8 @@
 
     const FONT_MAP = {
       phone: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      ios: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+      android: 'Roboto, "Noto Sans", -apple-system, "Droid Sans", "Segoe UI", Arial, sans-serif',
       sans: '"Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       mono: '"JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       serif: 'Georgia, Cambria, "Times New Roman", Times, serif'
@@ -2672,7 +2812,7 @@
       document.documentElement.style.setProperty('--font', fontValue);
       
       // Update Settings Tiles
-      ['phone', 'sans', 'mono', 'serif'].forEach(f => {
+      ['phone', 'ios', 'android', 'sans', 'mono', 'serif'].forEach(f => {
         const tile = document.getElementById('font-tile-' + f);
         if (tile) tile.classList.toggle('active', f === fontKey);
       });
@@ -2681,6 +2821,8 @@
       if (badge) {
         const labels = {
           phone: '📱 Phone Native Font',
+          ios: '🍎 Apple SF Pro',
+          android: '🤖 Android Roboto',
           sans: '🔤 Modern Sans',
           mono: '💻 Tech Mono',
           serif: '📰 Editorial Serif'
@@ -2698,11 +2840,134 @@
       currentFont = fontKey;
       localStorage.setItem("gapFlowFont", fontKey);
       applyFont(fontKey);
+      showToastNotification("Typography Updated", `Applied ${fontKey === 'phone' ? 'phone native system font' : fontKey} rendering.`, "good", "🔤");
+    }
+
+    // ========================================================
+    // DYNAMIC GLOBAL CURRENCY FORMATTING & MANAGEMENT
+    // ========================================================
+    function fmtMoney(n, curr = appState.currency || 'COP') {
+      const num = Number(n) || 0;
+      const currCode = (curr || 'COP').toUpperCase();
+
+      if (currCode === 'COP') {
+        return "COP " + Math.round(num).toLocaleString("es-CO");
+      } else if (currCode === 'KES') {
+        return "KES " + Math.round(num).toLocaleString("en-KE");
+      } else if (currCode === 'USD') {
+        return "$" + num.toLocaleString("en-US", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'EUR') {
+        return "€" + num.toLocaleString("de-DE", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'GBP') {
+        return "£" + num.toLocaleString("en-GB", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'JPY') {
+        return "¥" + Math.round(num).toLocaleString("ja-JP");
+      } else if (currCode === 'CAD') {
+        return "CA$ " + num.toLocaleString("en-CA", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'AUD') {
+        return "A$ " + num.toLocaleString("en-AU", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'INR') {
+        return "₹" + Math.round(num).toLocaleString("en-IN");
+      } else if (currCode === 'ZAR') {
+        return "R " + num.toLocaleString("en-ZA", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'AED') {
+        return "AED " + num.toLocaleString("en-AE", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else if (currCode === 'CHF') {
+        return "CHF " + num.toLocaleString("de-CH", { minimumFractionDigits: num % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+      } else {
+        return `${currCode} ` + (num % 1 === 0 ? Math.round(num).toLocaleString() : num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+      }
     }
 
     function fmtCop(n) {
-      return "COP " + Math.round(n || 0).toLocaleString("es-CO");
+      return fmtMoney(n, appState.currency || 'COP');
     }
+
+    function updateCurrencyHeaderButton() {
+      const curr = (appState.currency || 'COP').toUpperCase();
+      const currObj = GLOBAL_CURRENCIES.find(c => c.code === curr) || { code: curr, name: curr, flag: '🌐' };
+
+      const flagEl = document.getElementById('appCurrencyHeaderFlag');
+      const codeEl = document.getElementById('appCurrencyHeaderCode');
+      if (flagEl) flagEl.textContent = currObj.flag;
+      if (codeEl) codeEl.textContent = currObj.code;
+
+      const dashCurCode = document.getElementById('dashCurCode');
+      if (dashCurCode) dashCurCode.textContent = currObj.code;
+
+      const chartExpensesBadge = document.getElementById('chartExpensesBadge');
+      if (chartExpensesBadge) chartExpensesBadge.textContent = `● Expenses (${currObj.code})`;
+
+      const settingsBadge = document.getElementById('settingsActiveCurrencyBadge');
+      if (settingsBadge) settingsBadge.textContent = `${currObj.flag} ${currObj.code} (${currObj.name})`;
+
+      renderSettingsCurrencyGrid();
+    }
+
+    function setAppBaseCurrency(newCurrencyCode, convertExisting = false) {
+      const oldCode = (appState.currency || 'COP').toUpperCase();
+      const targetCode = (newCurrencyCode || 'COP').toUpperCase();
+
+      if (!targetCode) return;
+
+      if (convertExisting && oldCode !== targetCode && forexData) {
+        const rateOldToUsd = Number(forexData[oldCode]) || 1;
+        const rateNewToUsd = Number(forexData[targetCode]) || 1;
+        const factor = rateNewToUsd / rateOldToUsd;
+
+        if (factor > 0 && isFinite(factor)) {
+          appState.salary = Math.round(appState.salary * factor);
+
+          for (const key in appState.rules) {
+            appState.rules[key] = Math.round((Number(appState.rules[key]) || 0) * factor);
+          }
+
+          if (Array.isArray(appState.expenses)) {
+            appState.expenses.forEach(e => {
+              e.amount = Math.round((Number(e.amount) || 0) * factor);
+            });
+          }
+        }
+      }
+
+      appState.currency = targetCode;
+      persistState();
+      updateCurrencyHeaderButton();
+      renderApp();
+
+      const currObj = GLOBAL_CURRENCIES.find(c => c.code === targetCode) || { code: targetCode, flag: '🌐', name: targetCode };
+      showToastNotification(
+        "🌐 Base Currency Changed",
+        `Active app currency set to ${currObj.flag} ${currObj.code}${convertExisting ? ' (amounts converted)' : ''}.`,
+        "good",
+        currObj.flag
+      );
+      playChime('success');
+    }
+
+    function renderSettingsCurrencyGrid() {
+      const grid = document.getElementById('settingsCurrencyGrid');
+      if (!grid) return;
+
+      const activeCode = (appState.currency || 'COP').toUpperCase();
+      grid.innerHTML = GLOBAL_CURRENCIES.map(c => {
+        const isActive = c.code === activeCode;
+        return `
+          <div class="settings-tile ${isActive ? 'active' : ''}" onclick="selectBaseCurrencyFromTile('${c.code}')">
+            <span style="font-size: 24px;">${c.flag}</span>
+            <div class="settings-tile-title">${c.code}</div>
+            <div class="settings-tile-sub">${c.name}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectBaseCurrencyFromTile(code) {
+      const checkConvert = document.getElementById('convertExistingCurCheckbox');
+      const shouldConvert = checkConvert ? checkConvert.checked : true;
+      setAppBaseCurrency(code, shouldConvert);
+    }
+
     function currentIsoMonth() {
       return new Date().toISOString().slice(0, 7);
     }
@@ -2735,6 +3000,49 @@
         alloc[c] = totalWeight > 0 ? (appState.rules[c] * appState.salary) / totalWeight : 0;
       });
       return alloc;
+    }
+
+    // ========================================================
+    // BUDGET ITEM ADD, REMOVE, AND EDIT CONTROLLERS
+    // ========================================================
+    function addBudgetItem(name, amount) {
+      const cleanName = (name || '').trim();
+      if (!cleanName) {
+        alert('Please provide a valid category name.');
+        return false;
+      }
+      
+      const amtNum = Number(amount) || Math.round((appState.salary || 2300000) * 0.1);
+      appState.rules[cleanName] = Math.max(0, amtNum);
+      persistState();
+      renderApp();
+      showToastNotification("✅ Category Added", `Added "${cleanName}" with ${fmtCop(amtNum)} target.`, "good", "🎯");
+      playChime('success');
+      return true;
+    }
+
+    function removeBudgetItem(categoryKey) {
+      const keys = Object.keys(appState.rules);
+      if (keys.length <= 1) {
+        alert('You must have at least one budget category in your plan.');
+        return;
+      }
+
+      if (confirm(`Are you sure you want to remove the "${categoryKey}" category from your budget?`)) {
+        delete appState.rules[categoryKey];
+        persistState();
+        renderApp();
+        showToastNotification("🗑️ Category Removed", `Removed "${categoryKey}" from budget allocations.`, "warn", "🗑️");
+        playChime('alert');
+      }
+    }
+
+    function editBudgetItemTarget(categoryKey, newAmount) {
+      const amt = Math.max(0, Number(newAmount) || 0);
+      appState.rules[categoryKey] = amt;
+      persistState();
+      renderApp();
+      showToastNotification("Target Updated", `Updated target for "${categoryKey}" to ${fmtCop(amt)}.`, "good", "✎");
     }
 
     // ========================================================
@@ -2773,6 +3081,8 @@
         renderNotificationsView();
       } else if (targetView === 'ai') {
         renderAiChatView();
+      } else if (targetView === 'settings') {
+        renderSettingsCurrencyGrid();
       }
 
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -2790,6 +3100,7 @@
     // RENDERING CONTROLLERS
     // ========================================================
     function renderApp() {
+      updateCurrencyHeaderButton();
       populateCategorySelects();
       populateForexDropdowns();
       renderDashboardView();
@@ -2830,7 +3141,7 @@
       document.getElementById('dashLeftText').textContent = fmtCop(remaining);
 
       // Health status calculation
-      const livingAlloc = allocs.Living || 1000000;
+      const livingAlloc = allocs.Living || (appState.salary * 0.45);
       const isRed = (sums.Living || 0) > livingAlloc;
       const isAmber = (sums.Living || 0) > livingAlloc * 0.85;
       const healthEl = document.getElementById('dashHealthStatus');
@@ -2905,15 +3216,21 @@
         const spentPct = targetAmt > 0 ? Math.min(100, Math.round((spent / targetAmt) * 100)) : 0;
         
         return `
-          <div class="card" style="margin-bottom: 0;">
-            <div class="space-between">
-              <b>${c}</b>
-              <span class="badge cyan">${pctOfSalary}% of Total</span>
+          <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="space-between">
+                <b style="font-size: 15px;">${c}</b>
+                <span class="badge cyan">${pctOfSalary}% of Salary</span>
+              </div>
+              <div class="big-num" style="font-size: 22px; margin: 8px 0 2px;">${fmtCop(targetAmt)}</div>
+              <div class="dim">Spent this month: ${fmtCop(spent)} (${spentPct}%)</div>
+              <div class="progress" style="margin: 8px 0 12px;">
+                <div class="fill ${spent > targetAmt ? 'danger' : spentPct > 85 ? 'warn' : ''}" style="width: ${spentPct}%;"></div>
+              </div>
             </div>
-            <div class="big-num" style="font-size: 22px; margin: 8px 0 2px;">${fmtCop(targetAmt)}</div>
-            <div class="dim">Spent this month: ${fmtCop(spent)} (${spentPct}%)</div>
-            <div class="progress">
-              <div class="fill ${spent > targetAmt ? 'danger' : spentPct > 85 ? 'warn' : ''}" style="width: ${spentPct}%;"></div>
+            <div class="budget-card-footer">
+              <button class="secondary sm" style="padding: 3px 8px; font-size: 11px;" onclick="openEditBudgetItemDialog('${c}')">✎ Edit Target</button>
+              <button class="sm" style="padding: 3px 8px; font-size: 11px; color: var(--red); border-color: var(--red-border); background: var(--red-bg);" onclick="removeBudgetItem('${c}')">🗑️ Remove</button>
             </div>
           </div>
         `;
@@ -4157,14 +4474,101 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
       if (e.target.id === 'appModal') closeAppModal();
     });
 
+    function openCurrencySwitcherDialog() {
+      const activeCode = (appState.currency || 'COP').toUpperCase();
+      const currOptionsHtml = GLOBAL_CURRENCIES.map(c => `
+        <div class="settings-tile ${c.code === activeCode ? 'active' : ''}" style="cursor: pointer; padding: 10px;" onclick="document.querySelectorAll('.modal-curr-opt').forEach(el=>el.classList.remove('active')); this.classList.add('active'); document.getElementById('selectedModalCurrCode').value = '${c.code}';">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">${c.flag}</span>
+            <div>
+              <b style="font-size: 13px;">${c.code}</b>
+              <div class="dim" style="font-size: 11px;">${c.name}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      openAppModal(
+        `🌐 Switch App Base Currency`,
+        `
+        <p class="muted">Select any global currency to serve as your primary display and budget currency.</p>
+        <input type="hidden" id="selectedModalCurrCode" value="${activeCode}">
+        
+        <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; max-height: 240px; overflow-y: auto;">
+          ${currOptionsHtml}
+        </div>
+
+        <div style="margin-top: 14px; padding: 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--card-border);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="modalConvertCheckbox" checked style="cursor: pointer;">
+            <label for="modalConvertCheckbox" style="font-size: 12px; cursor: pointer;">
+              <b>Auto-convert existing figures</b> (salary, targets, expenses) at current live rates
+            </label>
+          </div>
+        </div>
+        `,
+        () => {
+          const selected = document.getElementById('selectedModalCurrCode').value || 'COP';
+          const convert = document.getElementById('modalConvertCheckbox').checked;
+          setAppBaseCurrency(selected, convert);
+        }
+      );
+    }
+
+    function openAddBudgetItemDialog() {
+      const cur = appState.currency || 'COP';
+      openAppModal(
+        `🎯 Add Budget Category`,
+        `
+        <p class="muted">Add a new budget envelope or target savings bucket to your monthly allocation plan.</p>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+          <div>
+            <label class="dim">Category Name</label>
+            <input id="newCatNameInput" placeholder="e.g. Healthcare, Certifications, Travel" style="width: 100%; font-size: 14px; margin-top: 4px;">
+          </div>
+          <div>
+            <label class="dim">Monthly Target / Weight (${cur})</label>
+            <input id="newCatAmtInput" type="number" placeholder="e.g. 200000" style="width: 100%; font-size: 16px; font-weight: 700; margin-top: 4px;">
+          </div>
+        </div>
+        `,
+        () => {
+          const name = document.getElementById('newCatNameInput').value;
+          const amt = document.getElementById('newCatAmtInput').value;
+          addBudgetItem(name, amt);
+        }
+      );
+    }
+
+    function openEditBudgetItemDialog(categoryKey) {
+      const cur = appState.currency || 'COP';
+      const currentAmt = appState.rules[categoryKey] || 0;
+
+      openAppModal(
+        `✎ Edit "${categoryKey}" Target`,
+        `
+        <p class="muted">Update the monthly allocation target weight for <b>${categoryKey}</b>.</p>
+        <div style="margin-top: 12px;">
+          <label class="dim">Target Amount (${cur})</label>
+          <input id="editCatAmtInput" type="number" value="${currentAmt}" style="width: 100%; font-size: 18px; font-weight: 700; margin-top: 4px;">
+        </div>
+        `,
+        () => {
+          const newAmt = document.getElementById('editCatAmtInput').value;
+          editBudgetItemTarget(categoryKey, newAmt);
+        }
+      );
+    }
+
     function openSalaryDialog() {
       const m = currentIsoMonth();
+      const cur = appState.currency || 'COP';
       openAppModal(
         `💵 Enter Salary for ${m}`,
         `
-        <p class="muted">Enter your confirmed monthly salary. All target buckets will scale proportionally.</p>
+        <p class="muted">Enter your confirmed monthly income. All target buckets will scale proportionally.</p>
         <div style="margin-top: 12px;">
-          <label class="dim">Monthly Salary Amount (COP)</label>
+          <label class="dim">Monthly Salary Amount (${cur})</label>
           <input id="salaryInputModal" type="number" value="${appState.salary}" style="width: 100%; font-size: 18px; font-weight: 700; margin-top: 4px;">
         </div>
         `,
@@ -4176,6 +4580,7 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
             delete appState.skips[m];
             persistState();
             renderApp();
+            showToastNotification("Salary Locked", `Monthly salary set to ${fmtCop(val)}.`, "good", "💵");
           }
         },
         true
@@ -4185,6 +4590,7 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
     function openExpenseDialog() {
       const cats = Object.keys(appState.rules);
       const catOpts = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      const cur = appState.currency || 'COP';
 
       openAppModal(
         `🧾 Log New Expense`,
@@ -4199,9 +4605,8 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
             <select id="modalExpCat" style="width: 100%;">${catOpts}</select>
           </div>
           <div>
-            <label class="dim">Amount (COP)</label>
-            <input id="modalExpAmt" type="number" placeholder="e.g. 35000" style="width: 100%; font-weight: 700;" oninput="updateModalExpConvertedHelper(this.value)">
-            <div id="modalExpConvHelper" class="input-conv-helper" style="margin-top: 4px;"></div>
+            <label class="dim">Amount (${cur})</label>
+            <input id="modalExpAmt" type="number" placeholder="e.g. 35000" style="width: 100%; font-weight: 700;">
           </div>
           <div>
             <label class="dim">Description / Merchant</label>
@@ -4217,7 +4622,7 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
 
           if (amount && amount > 0) {
             appState.expenses.push({
-              id: 'tx_' + Date.now(),
+              id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
               date,
               cat,
               amount,
@@ -4225,9 +4630,173 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
             });
             persistState();
             renderApp();
+            showToastNotification("Expense Logged", `Added ${fmtCop(amount)} to ${cat}.`, "good", "🧾");
           }
         }
       );
+    }
+
+    // ========================================================
+    // PDF BUDGET DOCUMENT UPLOAD & PARSING INTEGRATION
+    // ========================================================
+    function handlePdfFileInputChange(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      handlePdfBudgetUpload(file);
+      event.target.value = ''; // reset so same file can be re-uploaded if desired
+    }
+
+    async function handlePdfBudgetUpload(file) {
+      if (!file) return;
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        alert('Please select a valid PDF budget document.');
+        return;
+      }
+
+      // Show processing state in UI
+      const dropzone = document.getElementById('pdfDropzone');
+      const origContent = dropzone ? dropzone.innerHTML : null;
+      if (dropzone) {
+        dropzone.innerHTML = `
+          <div style="padding: 16px; text-align: center;">
+            <div style="font-size: 28px; animation: spin 1s infinite linear; display: inline-block;">⏳</div>
+            <div style="font-weight: 700; margin-top: 8px;">Analyzing PDF with Gemini Intelligence...</div>
+            <div class="dim" style="font-size: 12px; margin-top: 4px;">Extracting monthly salary, category weights, and expense line items...</div>
+          </div>
+        `;
+      }
+
+      showToastNotification("Analyzing PDF", "Parsing document structure and financial figures with Gemini...", "info", "📄");
+
+      try {
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const res = reader.result;
+            const b64 = res.split(',')[1];
+            resolve(b64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const response = await fetch('/api/budget/parse-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pdfBase64: base64Data,
+            fileName: file.name
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to parse PDF document.');
+        }
+
+        const data = result.data;
+        openPdfPreviewModal(data, file.name);
+
+      } catch (err) {
+        console.error('PDF parsing error:', err);
+        alert('Failed to parse PDF: ' + err.message);
+        showToastNotification("PDF Error", err.message, "warn", "❌");
+      } finally {
+        if (dropzone && origContent) {
+          dropzone.innerHTML = origContent;
+        }
+      }
+    }
+
+    function openPdfPreviewModal(extractedData, fileName = 'Budget Document') {
+      const salary = extractedData.salary || appState.salary || 2300000;
+      const categories = extractedData.categories || {};
+      const expenses = extractedData.itemizedExpenses || [];
+
+      const catListHtml = Object.entries(categories).map(([name, amt]) => `
+        <div class="space-between" style="padding: 6px 0; border-bottom: 1px solid var(--card-border);">
+          <span><b>${escapeHtml(name)}</b></span>
+          <span class="badge cyan">${fmtCop(amt)}</span>
+        </div>
+      `).join('');
+
+      const expListHtml = expenses.length > 0 ? expenses.slice(0, 5).map(e => `
+        <div class="space-between" style="padding: 4px 0; font-size: 12px;">
+          <span>${e.date || currentIsoToday()} • ${escapeHtml(e.note || e.category || 'Expense')}</span>
+          <b>${fmtCop(e.amount)}</b>
+        </div>
+      `).join('') : '<div class="dim" style="font-size: 12px;">No historical itemized expenses found.</div>';
+
+      const notesHtml = extractedData.notes ? `<div class="alert good" style="margin-top: 10px; font-size: 12px;">💡 ${escapeHtml(extractedData.notes)}</div>` : '';
+
+      openAppModal(
+        `📄 Apply PDF Budget: ${fileName}`,
+        `
+        <p class="muted">Gemini extracted the following budget framework from your document. Confirm to apply these values to your app.</p>
+        
+        <div style="margin-top: 12px; padding: 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--card-border);">
+          <div class="space-between">
+            <span class="dim">Extracted Monthly Salary:</span>
+            <b style="font-size: 18px; color: var(--accent);">${fmtCop(salary)}</b>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="dim" style="margin-bottom: 6px; text-transform: uppercase; font-size: 11px;">Extracted Budget Categories (${Object.keys(categories).length})</div>
+          <div style="max-height: 150px; overflow-y: auto; background: var(--surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+            ${catListHtml || '<div class="dim">No specific categories found.</div>'}
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="dim" style="margin-bottom: 6px; text-transform: uppercase; font-size: 11px;">Itemized Expenses Found (${expenses.length})</div>
+          <div style="max-height: 120px; overflow-y: auto; background: var(--surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+            ${expListHtml}
+          </div>
+        </div>
+
+        ${notesHtml}
+        `,
+        () => {
+          applyExtractedPdfBudget(extractedData);
+        }
+      );
+    }
+
+    function applyExtractedPdfBudget(data) {
+      if (data.salary && Number(data.salary) > 0) {
+        appState.salary = Number(data.salary);
+        appState.salaryMonths[currentIsoMonth()] = appState.salary;
+      }
+
+      if (data.categories && typeof data.categories === 'object' && Object.keys(data.categories).length > 0) {
+        appState.rules = {};
+        for (const [key, val] of Object.entries(data.categories)) {
+          if (key && !isNaN(Number(val))) {
+            appState.rules[key.trim()] = Math.max(0, Number(val));
+          }
+        }
+      }
+
+      if (Array.isArray(data.itemizedExpenses) && data.itemizedExpenses.length > 0) {
+        data.itemizedExpenses.forEach(exp => {
+          if (exp.amount && Number(exp.amount) > 0) {
+            appState.expenses.push({
+              id: 'tx_pdf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+              date: exp.date || currentIsoToday(),
+              cat: exp.category && appState.rules[exp.category] ? exp.category : (Object.keys(appState.rules)[0] || 'Living'),
+              amount: Number(exp.amount),
+              note: (exp.note || exp.description || 'Imported from PDF').trim()
+            });
+          }
+        });
+      }
+
+      persistState();
+      renderApp();
+      showToastNotification("✅ Budget Updated", "Your budget allocations have been updated from the uploaded PDF.", "good", "📄");
+      playChime('success');
     }
 
     function openRulesDialog() {
@@ -4664,6 +5233,34 @@ You can customize percentage distributions anytime in the **Budget** tab.`;
 
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("sw.js").catch(() => {});
+      }
+
+      // Drag-and-drop listener for PDF upload dropzone
+      const dropzone = document.getElementById('pdfDropzone');
+      if (dropzone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+          }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+          }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files && files.length > 0) {
+            handlePdfBudgetUpload(files[0]);
+          }
+        }, false);
       }
 
       // Responsive chart redraw on resize or orientation change
