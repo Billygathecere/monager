@@ -1,0 +1,6 @@
+{
+  "name": "GAP//FLOW Money Command Center",
+  "description": "Personal financial command center for the GAP year with local-first personal finance tracking, salary auto-distributor, and offline rule-based guide.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
