@@ -1253,6 +1253,49 @@
       white-space: nowrap;
     }
 
+    /* CONVERTED RESULT BANNER & LIVE CURRENCY HELPERS */
+    .converted-result-banner {
+      background: var(--card-bg-highlight);
+      border: 1px solid var(--cyan-border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 12px;
+      box-shadow: 0 4px 18px var(--cyan-glow);
+      transition: all 0.2s ease;
+    }
+    .converted-amount-display {
+      margin-top: 8px;
+    }
+    .converted-val {
+      font-size: clamp(22px, 5vw, 32px);
+      font-weight: 800;
+      color: var(--cyan);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .converted-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+    .input-conv-helper {
+      font-size: 11.5px;
+      color: var(--cyan);
+      margin-top: 4px;
+      font-weight: 600;
+      min-height: 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #dashCanvas {
+      width: 100%;
+      height: 290px;
+      display: block;
+      border-radius: 12px;
+    }
+
     /* THEME & FONT SELECTOR TILES */
     .settings-option-grid {
       display: grid;
@@ -1489,11 +1532,20 @@
 
       <!-- SPENDING TREND GRAPH -->
       <section class="card" style="margin-top: 16px;">
-        <div class="space-between" style="margin-bottom: 10px;">
-          <h2>📈 Monthly Trajectory</h2>
-          <span class="badge" id="dashTrendBadge">Month-over-month</span>
+        <div class="space-between" style="margin-bottom: 12px;">
+          <div>
+            <h2>📈 Monthly Spending Trajectory</h2>
+            <p class="muted" style="margin-bottom: 0;">Month-over-month expenses plotted against salary buffer limit</p>
+          </div>
+          <div class="row" style="gap: 8px;">
+            <span class="badge cyan">● Expenses (COP)</span>
+            <span class="badge" style="border-style: dashed; color: var(--amber);">╌ Salary Baseline</span>
+            <span class="badge" id="dashTrendBadge">Velocity</span>
+          </div>
         </div>
-        <canvas id="dashCanvas" width="1000" height="260"></canvas>
+        <div style="width: 100%; position: relative; overflow: hidden;">
+          <canvas id="dashCanvas" width="1000" height="290"></canvas>
+        </div>
         <div id="dashInsightMsg" class="alert good" style="margin-top: 10px;"></div>
       </section>
 
@@ -1557,10 +1609,11 @@
         <div class="expense-form-row">
           <input id="expPageDate" type="date">
           <select id="expPageCat"></select>
-          <input id="expPageAmount" type="number" placeholder="Amount (e.g. 50000)">
+          <input id="expPageAmount" type="number" placeholder="Amount (COP, e.g. 50000)" oninput="updateExpPageConvertedHelper(this.value)">
           <input id="expPageNote" class="grow-2 full-mobile" placeholder="Description / Merchant (e.g. Groceries, Flights, Tech)">
           <button class="primary" onclick="submitExpensePageForm()">＋ Add Expense</button>
         </div>
+        <div id="expPageConvHelper" class="input-conv-helper" style="margin-top: 6px;"></div>
       </section>
 
       <!-- EXPENSE FILTER & LEDGER -->
@@ -1610,7 +1663,7 @@
         <div class="space-between">
           <div>
             <h2>💱 Real-Time Global Currency Exchanger</h2>
-            <p>Live exchange rates connecting Colombian Peso (COP), Kenyan Shilling (KES), US Dollar (USD), Euro (EUR), and British Pound (GBP).</p>
+            <p>Instant two-way conversion connecting Colombian Peso (COP), Kenyan Shilling (KES), US Dollar (USD), Euro (EUR), and global currencies.</p>
           </div>
           <div class="row">
             <span class="badge green" id="forexStatusBadge">🟢 Live Rates</span>
@@ -1621,44 +1674,82 @@
 
       <div class="grid-2">
         
-        <!-- DUAL CONVERTER -->
+        <!-- DUAL TWO-WAY CONVERTER -->
         <section class="card">
-          <h2>Forex Converter</h2>
+          <div class="space-between">
+            <h2>Two-Way Currency Converter</h2>
+            <span class="badge cyan" id="forexLiveActiveTag">Live Sync</span>
+          </div>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
             
+            <!-- SENDING FROM -->
             <div class="currency-card">
-              <span class="muted">You Send (From)</span>
+              <div class="space-between" style="margin-bottom: 4px;">
+                <span class="muted">You Enter (From)</span>
+                <span class="dim" id="forexFromCountryLabel">Colombia</span>
+              </div>
               <div class="currency-input-row">
-                <select id="forexFrom" class="curr-select" onchange="calculateForex()"></select>
-                <input id="forexAmountFrom" type="number" class="curr-val-input" value="1000000" oninput="calculateForex()">
+                <select id="forexFrom" class="curr-select" onchange="calculateForex(false)"></select>
+                <input id="forexAmountFrom" type="number" class="curr-val-input" value="1000000" placeholder="0.00" oninput="calculateForex(false)">
               </div>
             </div>
 
             <div style="text-align: center; margin: -4px 0;">
-              <button class="secondary sm" style="border-radius: 99px; padding: 6px 14px;" onclick="swapForexCurrencies()">⇄ Swap Currencies</button>
+              <button class="secondary sm" style="border-radius: 99px; padding: 6px 14px;" onclick="swapForexCurrencies()" title="Swap Currencies">
+                ⇄ Swap Currencies
+              </button>
             </div>
 
+            <!-- RECEIVING TO -->
             <div class="currency-card">
-              <span class="muted">You Receive (To)</span>
+              <div class="space-between" style="margin-bottom: 4px;">
+                <span class="muted">Equivalent Value (To)</span>
+                <span class="dim" id="forexToCountryLabel">Kenya</span>
+              </div>
               <div class="currency-input-row">
-                <select id="forexTo" class="curr-select" onchange="calculateForex()"></select>
-                <input id="forexAmountTo" type="text" class="curr-val-input" readonly style="color: var(--cyan);">
+                <select id="forexTo" class="curr-select" onchange="calculateForex(false)"></select>
+                <input id="forexAmountTo" type="number" step="any" class="curr-val-input" placeholder="0.00" oninput="calculateForex(true)">
               </div>
             </div>
 
-            <div class="space-between" style="margin-top: 6px;">
-              <div class="badge cyan" id="forexRateSummary">1 COP = ...</div>
-              <span class="dim" id="forexLastSync">Synced just now</span>
+            <!-- PROMINENT DYNAMIC RESULT DISPLAY BANNER -->
+            <div class="converted-result-banner" id="forexPrimaryResultBanner">
+              <div class="space-between">
+                <span class="badge cyan" id="forexConversionBadge">🇨🇴 Colombia (COP) ➔ 🇰🇪 Kenya (KES)</span>
+                <span class="dim" id="forexLastSync">Synced just now</span>
+              </div>
+              <div class="converted-amount-display">
+                <div class="converted-val" id="forexBigResultText">KES 32,450.00</div>
+                <div class="converted-sub" id="forexReadableSummary">1,000,000 Colombian Pesos (COP) = 32,450.00 Kenyan Shillings (KES)</div>
+              </div>
+              <div class="row" style="margin-top: 10px; gap: 8px;">
+                <span class="badge cyan" id="forexRateSummary">1 COP = ...</span>
+                <span class="badge" id="forexInverseRateBadge">1 KES = ...</span>
+                <span class="badge green" id="forexUsdBridgeBadge">≈ $246.50 USD</span>
+              </div>
             </div>
 
-            <!-- PRESETS -->
-            <div style="margin-top: 10px;">
-              <span class="muted">Quick Presets (COP):</span>
+            <!-- QUICK PRESETS -->
+            <div style="margin-top: 8px;">
+              <div class="space-between">
+                <span class="muted">Quick Presets (COP):</span>
+                <span class="dim">Tap to convert</span>
+              </div>
+              <div class="forex-presets-grid" style="margin-bottom: 6px;">
+                <button class="sm secondary" onclick="setForexPresetFrom(100000)">100k COP</button>
+                <button class="sm secondary" onclick="setForexPresetFrom(500000)">500k COP</button>
+                <button class="sm secondary" onclick="setForexPresetFrom(1000000)">1.0M COP</button>
+                <button class="sm secondary" onclick="setForexPresetFrom(2300000)">2.3M (Salary)</button>
+              </div>
+
+              <div class="space-between" style="margin-top: 6px;">
+                <span class="muted">Kenya (KES) Shilling Presets:</span>
+              </div>
               <div class="forex-presets-grid">
-                <button class="sm secondary" onclick="setForexPreset(100000)">100k</button>
-                <button class="sm secondary" onclick="setForexPreset(500000)">500k</button>
-                <button class="sm secondary" onclick="setForexPreset(1000000)">1.0M</button>
-                <button class="sm secondary" onclick="setForexPreset(2300000)">2.3M (Salary)</button>
+                <button class="sm secondary" onclick="setForexPresetTo(1000)">1,000 KES</button>
+                <button class="sm secondary" onclick="setForexPresetTo(5000)">5,000 KES</button>
+                <button class="sm secondary" onclick="setForexPresetTo(10000)">10,000 KES</button>
+                <button class="sm secondary" onclick="setForexPresetTo(50000)">50,000 KES</button>
               </div>
             </div>
 
@@ -1668,12 +1759,12 @@
         <!-- LIVE COMPARISON MATRIX -->
         <section class="card">
           <h2>📊 Global Currency Matrix</h2>
-          <p class="muted">Equivalent value of your entered amount across major international currencies:</p>
+          <p class="muted">Equivalent value of your entered money across international destinations:</p>
           <div class="table-wrap" style="margin-top: 10px;">
             <table>
               <thead>
                 <tr>
-                  <th>Currency</th>
+                  <th>Currency / Country</th>
                   <th>Rate / USD</th>
                   <th>Equivalent Value</th>
                 </tr>
@@ -1682,7 +1773,7 @@
             </table>
           </div>
           <div class="alert good" style="margin-top: 14px;">
-            💡 <b>Colombia ⇄ Kenya Travel Tip:</b> When transferring funds between Colombian bank accounts and Kenyan M-Pesa / banks, watch for intermediate USD conversion margins.
+            💡 <b>Colombia ⇄ Kenya Travel Tip:</b> When transferring funds between Colombian accounts and Kenyan M-Pesa / local banks, live rates allow you to time transfers during favorable rate windows.
           </div>
         </section>
 
@@ -3494,50 +3585,152 @@
       }
     }
 
-    function calculateForex() {
+    function calculateForex(reverse = false) {
       if (!forexData) return;
-      const from = document.getElementById('forexFrom')?.value || 'COP';
-      const to = document.getElementById('forexTo')?.value || 'KES';
-      const amount = Number(document.getElementById('forexAmountFrom')?.value) || 0;
+      const fromSel = document.getElementById('forexFrom');
+      const toSel = document.getElementById('forexTo');
+      const from = fromSel?.value || 'COP';
+      const to = toSel?.value || 'KES';
 
       const rateFromUsd = forexData[from] || 1;
       const rateToUsd = forexData[to] || 1;
 
-      // Conversion calculation through base USD
-      const inUsd = amount / rateFromUsd;
-      const result = inUsd * rateToUsd;
+      const fromObj = GLOBAL_CURRENCIES.find(x => x.code === from) || { flag: '🌐', name: from };
+      const toObj = GLOBAL_CURRENCIES.find(x => x.code === to) || { flag: '🌐', name: to };
 
+      // Update country labels in the input cards
+      const fromCountryLabel = document.getElementById('forexFromCountryLabel');
+      if (fromCountryLabel) fromCountryLabel.textContent = `${fromObj.flag} ${fromObj.name}`;
+      const toCountryLabel = document.getElementById('forexToCountryLabel');
+      if (toCountryLabel) toCountryLabel.textContent = `${toObj.flag} ${toObj.name}`;
+
+      const fromInput = document.getElementById('forexAmountFrom');
       const toInput = document.getElementById('forexAmountTo');
-      if (toInput) {
-        toInput.value = result.toLocaleString(undefined, { maximumFractionDigits: (to === 'COP' || to === 'JPY' ? 0 : 2) });
+
+      let amountFrom = Number(fromInput?.value) || 0;
+      let amountTo = Number(toInput?.value) || 0;
+
+      let inUsd = 0;
+      let convertedValue = 0;
+
+      if (reverse) {
+        // User typed into the "Receive / To" box -> compute "Send / From"
+        inUsd = amountTo / rateToUsd;
+        amountFrom = inUsd * rateFromUsd;
+        if (fromInput && document.activeElement === toInput) {
+          fromInput.value = (from === 'COP' || from === 'JPY') ? Math.round(amountFrom) : Number(amountFrom.toFixed(2));
+        }
+        convertedValue = amountTo;
+      } else {
+        // User typed into "Send / From" or changed dropdowns
+        inUsd = amountFrom / rateFromUsd;
+        convertedValue = inUsd * rateToUsd;
+        if (toInput && document.activeElement !== toInput) {
+          toInput.value = (to === 'COP' || to === 'JPY') ? Math.round(convertedValue) : Number(convertedValue.toFixed(2));
+        }
       }
 
-      // Summary rate label
+      // Rates
       const oneUnitConverted = (1 / rateFromUsd) * rateToUsd;
-      const pill = document.getElementById('forexRateSummary');
-      if (pill) {
-        pill.textContent = `1 ${from} = ${oneUnitConverted.toFixed(4)} ${to}`;
+      const invUnitConverted = (1 / rateToUsd) * rateFromUsd;
+
+      // Update Top Dynamic Result Highlight Banner
+      const conversionBadge = document.getElementById('forexConversionBadge');
+      if (conversionBadge) {
+        conversionBadge.textContent = `${fromObj.flag} ${from} (${fromObj.name}) ➔ ${toObj.flag} ${to} (${toObj.name})`;
       }
 
-      // Render Matrix
-      renderForexMatrix(inUsd, amount, from);
+      const bigResult = document.getElementById('forexBigResultText');
+      if (bigResult) {
+        const decimals = (to === 'COP' || to === 'JPY') ? 0 : 2;
+        bigResult.textContent = `${toObj.flag} ${to} ${convertedValue.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+      }
+
+      const readableSummary = document.getElementById('forexReadableSummary');
+      if (readableSummary) {
+        const fromDec = (from === 'COP' || from === 'JPY') ? 0 : 2;
+        const toDec = (to === 'COP' || to === 'JPY') ? 0 : 2;
+        readableSummary.textContent = `${amountFrom.toLocaleString(undefined, { maximumFractionDigits: fromDec })} ${from} (${fromObj.name}) is worth ${convertedValue.toLocaleString(undefined, { maximumFractionDigits: toDec })} ${to} (${toObj.name}) in ${toObj.name}`;
+      }
+
+      // Rate pills
+      const rateSummary = document.getElementById('forexRateSummary');
+      if (rateSummary) {
+        rateSummary.textContent = `1 ${from} = ${oneUnitConverted < 0.01 ? oneUnitConverted.toFixed(6) : oneUnitConverted.toFixed(4)} ${to}`;
+      }
+
+      const invRateBadge = document.getElementById('forexInverseRateBadge');
+      if (invRateBadge) {
+        invRateBadge.textContent = `1 ${to} = ${invUnitConverted < 0.01 ? invUnitConverted.toFixed(6) : invUnitConverted.toFixed(4)} ${from}`;
+      }
+
+      const usdBridge = document.getElementById('forexUsdBridgeBadge');
+      if (usdBridge) {
+        usdBridge.textContent = `≈ $${inUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD Base`;
+      }
+
+      // Update Matrix table
+      renderForexMatrix(inUsd, amountFrom, from);
+
+      // Update live expense helpers
+      updateExpPageConvertedHelper(document.getElementById('expPageAmount')?.value || 0);
     }
 
     function swapForexCurrencies() {
       const fromSel = document.getElementById('forexFrom');
       const toSel = document.getElementById('forexTo');
+      if (!fromSel || !toSel) return;
       const temp = fromSel.value;
       fromSel.value = toSel.value;
       toSel.value = temp;
-      calculateForex();
+      calculateForex(false);
     }
 
-    function setForexPreset(amt) {
+    function setForexPresetFrom(amt) {
       const fromInput = document.getElementById('forexAmountFrom');
       if (fromInput) {
         fromInput.value = amt;
-        calculateForex();
+        calculateForex(false);
       }
+    }
+
+    function setForexPresetTo(amt) {
+      const toInput = document.getElementById('forexAmountTo');
+      if (toInput) {
+        toInput.value = amt;
+        toInput.focus();
+        calculateForex(true);
+      }
+    }
+
+    function updateExpPageConvertedHelper(amt) {
+      const helper = document.getElementById('expPageConvHelper');
+      if (!helper) return;
+      const num = Number(amt) || 0;
+      if (num <= 0 || !forexData) {
+        helper.innerHTML = '';
+        return;
+      }
+      const copRate = forexData.COP || 4050;
+      const kesRate = forexData.KES || 131.5;
+      const inKes = (num / copRate) * kesRate;
+      const inUsd = num / copRate;
+      helper.innerHTML = `🇰🇪 <b>KES ${inKes.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> &nbsp;•&nbsp; 🇺🇸 <b>$${inUsd.toFixed(2)} USD</b> equivalent`;
+    }
+
+    function updateModalExpConvertedHelper(amt) {
+      const helper = document.getElementById('modalExpConvHelper');
+      if (!helper) return;
+      const num = Number(amt) || 0;
+      if (num <= 0 || !forexData) {
+        helper.innerHTML = '';
+        return;
+      }
+      const copRate = forexData.COP || 4050;
+      const kesRate = forexData.KES || 131.5;
+      const inKes = (num / copRate) * kesRate;
+      const inUsd = num / copRate;
+      helper.innerHTML = `🇰🇪 <b>KES ${inKes.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> &nbsp;•&nbsp; 🇺🇸 <b>$${inUsd.toFixed(2)} USD</b>`;
     }
 
     function renderForexMatrix(usdVal, origAmt, origCurr) {
@@ -3545,17 +3738,18 @@
       const matrix = document.getElementById('forexMatrixTable');
       if (!matrix) return;
 
-      const matrixList = ['KES', 'USD', 'EUR', 'GBP', 'CAD', 'AED', 'BRL', 'JPY'];
+      const matrixList = ['KES', 'USD', 'EUR', 'GBP', 'CAD', 'AED', 'BRL', 'JPY', 'AUD', 'CHF'];
       matrix.innerHTML = matrixList.map(code => {
         const rate = forexData[code] || 1;
-        const conv = usdVal * rate;
+        const conv = (usdVal || 0) * rate;
         const cObj = GLOBAL_CURRENCIES.find(x => x.code === code) || { flag: '🌐', name: code };
+        const isHighlight = (code === 'KES' || code === 'USD');
         return `
-          <tr>
+          <tr style="${isHighlight ? 'background: var(--card-bg-highlight); font-weight: 600;' : ''}">
             <td><b>${cObj.flag} ${code}</b> <span class="dim">(${cObj.name})</span></td>
             <td class="muted">${rate.toFixed(2)}</td>
             <td style="color: var(--cyan); font-weight: 700;">
-              ${conv.toLocaleString(undefined, { maximumFractionDigits: (code === 'JPY' ? 0 : 2) })} ${code}
+              ${conv.toLocaleString(undefined, { minimumFractionDigits: (code === 'JPY' || code === 'COP' ? 0 : 2), maximumFractionDigits: (code === 'JPY' || code === 'COP' ? 0 : 2) })} ${code}
             </td>
           </tr>
         `;
@@ -3803,7 +3997,8 @@
           </div>
           <div>
             <label class="dim">Amount (COP)</label>
-            <input id="modalExpAmt" type="number" placeholder="e.g. 35000" style="width: 100%; font-weight: 700;">
+            <input id="modalExpAmt" type="number" placeholder="e.g. 35000" style="width: 100%; font-weight: 700;" oninput="updateModalExpConvertedHelper(this.value)">
+            <div id="modalExpConvHelper" class="input-conv-helper" style="margin-top: 4px;"></div>
           </div>
           <div>
             <label class="dim">Description / Merchant</label>
@@ -3982,10 +4177,37 @@
       const c = document.getElementById('dashCanvas');
       if (!c) return;
       const ctx = c.getContext('2d');
-      const w = c.width = c.parentElement.clientWidth ? c.parentElement.clientWidth * 2 : 1000;
-      const h = c.height = 360;
+      const dpr = window.devicePixelRatio || 1;
+      
+      const rect = c.parentElement.getBoundingClientRect();
+      const displayWidth = Math.max(rect.width, 320);
+      const displayHeight = 290;
+
+      c.width = displayWidth * dpr;
+      c.height = displayHeight * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = displayWidth;
+      const h = displayHeight;
 
       ctx.clearRect(0, 0, w, h);
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)';
+      const textMuted = isDark ? '#94a3b8' : '#64748b';
+      const primaryCyan = isDark ? '#38bdf8' : '#0284c7';
+      const amberSalary = isDark ? '#f59e0b' : '#d97706';
+
+      // Margins with ample gutters to guarantee lines NEVER cross labels or legends
+      const padLeft = 100;
+      const padRight = 35;
+      const padTop = 40;
+      const padBottom = 50;
+
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+      const plotRight = w - padRight;
+      const plotBottom = h - padBottom;
 
       // Aggregate expenses by month
       const byMonth = {};
@@ -3996,94 +4218,155 @@
         }
       });
 
-      const months = Object.keys(byMonth).sort().slice(-8);
+      const months = Object.keys(byMonth).sort().slice(-7);
       if (!months.includes(currentIsoMonth())) {
         months.push(currentIsoMonth());
         byMonth[currentIsoMonth()] = byMonth[currentIsoMonth()] || 0;
       }
 
-      const maxVal = Math.max(1500000, ...months.map(m => byMonth[m] || 0));
+      const salaryVal = Number(appState.salary) || 2300000;
+      const maxExp = Math.max(0, ...months.map(m => byMonth[m] || 0));
+      const maxVal = Math.max(salaryVal * 1.1, maxExp * 1.15, 1000000);
 
-      // Grid lines
-      ctx.strokeStyle = "#16283d";
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i++) {
-        const y = 30 + (i * (h - 70)) / 4;
+      // 1. Draw Horizontal Grid Lines & Y-Axis Labels (Lines start cleanly at padLeft)
+      const gridSteps = 4;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.font = '11.5px system-ui, -apple-system, sans-serif';
+
+      for (let i = 0; i <= gridSteps; i++) {
+        const y = padTop + (i * plotH) / gridSteps;
+        const gridVal = maxVal * (1 - i / gridSteps);
+
+        // Y-axis label placed strictly in the left gutter, separated from grid lines
+        ctx.fillStyle = textMuted;
+        ctx.fillText("COP " + Math.round(gridVal / 1000) + "k", padLeft - 14, y);
+
+        // Grid line strictly between padLeft and plotRight
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(60, y);
-        ctx.lineTo(w - 20, y);
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(plotRight, y);
         ctx.stroke();
-
-        ctx.fillStyle = "#5a6f87";
-        ctx.font = "18px system-ui";
-        const gridVal = maxVal * (1 - i / 4);
-        ctx.fillText("COP " + Math.round(gridVal / 1000) + "k", 10, y + 5);
       }
 
-      // Line & Area
-      if (months.length > 0) {
+      // 2. Draw Salary Baseline (Dashed Line)
+      if (salaryVal > 0 && salaryVal <= maxVal) {
+        const salY = plotBottom - (salaryVal / maxVal) * plotH;
+        if (salY >= padTop && salY <= plotBottom) {
+          ctx.save();
+          ctx.strokeStyle = amberSalary;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          ctx.moveTo(padLeft, salY);
+          ctx.lineTo(plotRight, salY);
+          ctx.stroke();
+
+          // Baseline Label
+          ctx.setLineDash([]);
+          ctx.fillStyle = amberSalary;
+          ctx.font = 'bold 10.5px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(`Salary Base: COP ${Math.round(salaryVal / 1000)}k`, plotRight - 4, salY - 6);
+          ctx.restore();
+        }
+      }
+
+      // 3. Compute Data Points (strictly inside plot boundaries)
+      const points = [];
+      months.forEach((m, i) => {
+        const x = padLeft + (months.length > 1 ? (i * plotW) / (months.length - 1) : plotW / 2);
+        const val = byMonth[m] || 0;
+        const y = plotBottom - (val / maxVal) * plotH;
+        points.push({ x, y, m, val });
+      });
+
+      if (points.length > 0) {
+        // Area Gradient under trajectory line
         ctx.beginPath();
-        const points = [];
-        months.forEach((m, i) => {
-          const x = 70 + (i * (w - 120)) / Math.max(months.length - 1, 1);
-          const val = byMonth[m] || 0;
-          const y = h - 45 - (val / maxVal) * (h - 90);
-          points.push({ x, y, m, val });
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        });
-
-        // Stroke line
-        ctx.strokeStyle = "#47e6ff";
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        // Area Gradient
-        ctx.lineTo(points[points.length - 1].x, h - 40);
-        ctx.lineTo(points[0].x, h - 40);
+        ctx.moveTo(points[0].x, plotBottom);
+        points.forEach(pt => ctx.lineTo(pt.x, pt.y));
+        ctx.lineTo(points[points.length - 1].x, plotBottom);
         ctx.closePath();
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, "rgba(71, 230, 255, 0.22)");
-        grad.addColorStop(1, "rgba(71, 230, 255, 0)");
+
+        const grad = ctx.createLinearGradient(0, padTop, 0, plotBottom);
+        grad.addColorStop(0, isDark ? "rgba(56, 189, 248, 0.26)" : "rgba(2, 132, 199, 0.16)");
+        grad.addColorStop(1, isDark ? "rgba(56, 189, 248, 0.0)" : "rgba(2, 132, 199, 0.0)");
         ctx.fillStyle = grad;
         ctx.fill();
 
-        // Points
-        points.forEach(pt => {
+        // Main Trajectory Line
+        ctx.beginPath();
+        points.forEach((pt, i) => {
+          if (i === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.strokeStyle = primaryCyan;
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Draw Data Points, Tooltip Tags, and X-axis Month Legends
+        points.forEach((pt) => {
+          // Circular point
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
-          ctx.fillStyle = "#47e6ff";
+          ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+          ctx.fillStyle = primaryCyan;
           ctx.fill();
-          ctx.strokeStyle = "#060c18";
+          ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
           ctx.lineWidth = 2;
           ctx.stroke();
 
-          ctx.fillStyle = "#8b9eb7";
-          ctx.font = "18px system-ui";
-          ctx.textAlign = "center";
-          ctx.fillText(pt.m, pt.x, h - 15);
+          // Value Pill Badge above point (offset cleanly)
+          const labelText = 'COP ' + (pt.val >= 1000000 ? (pt.val / 1000000).toFixed(1) + 'M' : Math.round(pt.val / 1000) + 'k');
+          ctx.font = 'bold 10px system-ui, -apple-system, sans-serif';
+          const textW = ctx.measureText(labelText).width;
+          const tagY = pt.y < padTop + 20 ? pt.y + 18 : pt.y - 12;
+
+          ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.94)';
+          ctx.fillRect(pt.x - textW / 2 - 4, tagY - 9, textW + 8, 14);
+          ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.45)' : 'rgba(2, 132, 199, 0.35)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(pt.x - textW / 2 - 4, tagY - 9, textW + 8, 14);
+
+          ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(labelText, pt.x, tagY - 2);
+
+          // X-Axis Month Legend below the plot area (lines never touch these)
+          const isCurrent = pt.m === currentIsoMonth();
+          ctx.fillStyle = isCurrent ? primaryCyan : textMuted;
+          ctx.font = isCurrent ? 'bold 11px system-ui, -apple-system, sans-serif' : '11px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pt.m + (isCurrent ? ' •' : ''), pt.x, plotBottom + 22);
         });
       }
 
       // Monthly Insight Comment
       const insightEl = document.getElementById('dashInsightMsg');
-      const cur = byMonth[currentIsoMonth()] || 0;
-      const sortedM = Object.keys(byMonth).sort();
-      const prevM = sortedM[sortedM.indexOf(currentIsoMonth()) - 1];
-      const prev = prevM ? byMonth[prevM] : null;
+      if (insightEl) {
+        const cur = byMonth[currentIsoMonth()] || 0;
+        const sortedM = Object.keys(byMonth).sort();
+        const prevM = sortedM[sortedM.indexOf(currentIsoMonth()) - 1];
+        const prev = prevM ? byMonth[prevM] : null;
 
-      if (!prev) {
-        insightEl.innerHTML = `📊 Track expenses month over month to observe spending velocity.`;
-        insightEl.className = 'alert';
-      } else if (cur > prev) {
-        insightEl.innerHTML = `⚠️ <b>Spending Trajectory:</b> Spending increased by <b>${fmtCop(cur - prev)}</b> versus ${prevM}.`;
-        insightEl.className = 'alert warn';
-      } else if (cur < prev) {
-        insightEl.innerHTML = `✅ <b>Well done:</b> Spending decreased by <b>${fmtCop(prev - cur)}</b> compared to ${prevM}.`;
-        insightEl.className = 'alert good';
-      } else {
-        insightEl.innerHTML = `⚖️ Spending is identical to ${prevM}.`;
-        insightEl.className = 'alert good';
+        if (!prev) {
+          insightEl.innerHTML = `📊 <b>Spending Velocity:</b> Tracking expenses month over month. Current month: <b>${fmtCop(cur)}</b>.`;
+          insightEl.className = 'alert';
+        } else if (cur > prev) {
+          insightEl.innerHTML = `⚠️ <b>Spending Velocity:</b> Spending increased by <b>${fmtCop(cur - prev)}</b> versus ${prevM}.`;
+          insightEl.className = 'alert warn';
+        } else if (cur < prev) {
+          insightEl.innerHTML = `✅ <b>Well done:</b> Spending decreased by <b>${fmtCop(prev - cur)}</b> compared to ${prevM}.`;
+          insightEl.className = 'alert good';
+        } else {
+          insightEl.innerHTML = `⚖️ Spending is identical to ${prevM} (${fmtCop(cur)}).`;
+          insightEl.className = 'alert good';
+        }
       }
     }
 
