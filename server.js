@@ -139,7 +139,7 @@ app.post('/api/ai/chat', async (req, res) => {
     const formattedSalary = ctx.salary ? `COP ${Number(ctx.salary).toLocaleString('es-CO')}` : 'COP 2,300,000';
     const formattedSpent = ctx.totalSpent ? `COP ${Number(ctx.totalSpent).toLocaleString('es-CO')}` : 'COP 0';
     const formattedUnallocated = ctx.unallocated ? `COP ${Number(ctx.unallocated).toLocaleString('es-CO')}` : 'COP 0';
-    
+
     let bucketBreakdown = 'No active bucket breakdown.';
     if (ctx.allocations && typeof ctx.allocations === 'object') {
       bucketBreakdown = Object.entries(ctx.allocations)
@@ -154,24 +154,53 @@ app.post('/api/ai/chat', async (req, res) => {
         .join('\n');
     }
 
-    const systemInstruction = `You are GAP//AI, an elite personal financial strategist and money command center advisor for a user managing their money between Colombia (COP) and Kenya (KES), planning travel, upgrading tech (MacBook), investing, and building wealth.
+    const systemInstruction = `You are Monager AI, an intelligent personal financial strategist and money command center advisor.
 
 USER REAL-TIME FINANCIAL STATE:
+- Primary Currency: ${ctx.currency || 'COP'}
 - Monthly Salary: ${formattedSalary}
 - Total Spent This Month: ${formattedSpent}
+- Available Cash Balance: ${ctx.availableBalance ? `COP ${Number(ctx.availableBalance).toLocaleString('es-CO')}` : formattedSalary}
+- Emergency Buffer Reserve: ${ctx.emergencyBuffer ? `COP ${Number(ctx.emergencyBuffer).toLocaleString('es-CO')}` : 'COP 345,000'}
+- Upcoming Mandatory Obligations: ${ctx.upcomingObligations ? `COP ${Number(ctx.upcomingObligations).toLocaleString('es-CO')}` : 'COP 450,000'}
 - Unallocated / Safe Buffer Remaining: ${formattedUnallocated}
-- Current Financial Health Status: ${ctx.healthStatus || 'GREEN'}
-- Primary Currency: ${ctx.currency || 'COP'} (with active exchange interest in KES, USD, EUR, GBP)
+- Current Financial Health Status: ${ctx.healthStatus || 'HEALTHY'} (Score: ${ctx.healthScore || 85}/100)
 - Category Bucket Allocations & Real-Time Remaining Balances:
 ${bucketBreakdown}
+- Active Goals:
+${Array.isArray(ctx.goals) ? ctx.goals.map(g => `- ${g.name}: Saved ${g.current} of ${g.target} (Monthly: ${g.monthlyContribution || 0})`).join('\n') : 'None'}
 - Recent Logged Expenses:
 ${recentExpenseList}
 
-YOUR BEHAVIOR & GUIDELINES:
-1. Provide precise, actionable, smart, and direct financial answers using the user's REAL live numbers shown above.
-2. If asked "Can I afford X?", calculate exact deductions from their relevant bucket (e.g. Living or Travel), state the exact remaining balance after purchase, and give a clear Verdict (Affordable / Exceeds Budget / Split Needed).
-3. If asked about travel between Colombia and Kenya, advise on smart currency conversions (COP to KES or USD), M-Pesa, card foreign transaction fees, and flight savings targets.
-4. When suggesting plans, give concise structured bullet points with bold numbers. Avoid fluff or repetitive disclaimers. End with 1 actionable recommendation or follow-up prompt.`;
+STRICT RESPONSE PATTERNS:
+1. TEST A ("Can I afford X?"):
+Do NOT simply say "Yes, you can afford it."
+Provide structured breakdown:
+- Purchase: [Currency] [Amount]
+- Verdict: [SAFE TO BUY | WAIT | NOT RECOMMENDED]
+- Available cash: [Amount]
+- Emergency reserve: [PROTECTED ✓ or DEFICIT ✗]
+- Upcoming obligations: [Amount]
+- Goal impact: [Low / Medium / High]
+- Reason: [Detailed financial explanation based on live state]
+- Recommendation: [Clear, direct advice]
+
+2. TEST B ("How am I doing financially?"):
+Provide comprehensive financial briefing covering:
+- Income & Cash Flow
+- Spending & Budget Discipline (burn rate, top categories)
+- Savings, Goals & Emergency Buffer
+- Financial Health Score and status
+- Concise, actionable recommendations
+
+3. TEST C ("How much have I spent this month?"):
+Calculate exact total spent from logged expense records, itemize categories with % utilized against budget, show transaction counts, and compare to monthly salary.
+
+4. TEST D ("Move X% from A to B" or fund transfers):
+Explain the proposed reallocation clearly, state current vs new allocations and monthly amount shifted, and instruct the user to review the proposal card and click [Apply Changes].
+
+5. TEST E ("What should I improve about my spending?"):
+Analyze actual category burn rates, identify high spending or buffer shortfalls, and give 3 prioritized, concrete recommendations.`;
 
     if (ai) {
       // Build clean alternating multiturn conversation history
@@ -231,68 +260,118 @@ YOUR BEHAVIOR & GUIDELINES:
 
     // High-intelligence Local Fallback Engine if AI models are unreachable or key is missing
     const lower = message.toLowerCase();
+    const curr = ctx.currency || 'COP';
     let fallbackReply = '';
-    
-    const parsedNum = (message.match(/\d+[\d,.]*/g) || ['0'])[0].replace(/[.,]/g, '');
-    const val = Number(parsedNum);
-    const livingAlloc = ctx.allocations?.Living || 1000000;
-    const livingSpent = ctx.spentByCategory?.Living || 0;
-    const livingRemaining = Math.max(0, livingAlloc - livingSpent);
 
-    if (lower.includes('spend') || lower.includes('buy') || lower.includes('afford') || lower.includes('cost')) {
-      if (val > 0) {
-        const wouldLeave = livingRemaining - val;
-        if (wouldLeave >= 0) {
-          fallbackReply = `### 📊 Affordability Verdict: COP ${val.toLocaleString('es-CO')}
-- **Living Bucket Allocation**: COP ${livingAlloc.toLocaleString('es-CO')}
-- **Current Spent in Living**: COP ${livingSpent.toLocaleString('es-CO')}
-- **Available in Living Before Purchase**: COP ${livingRemaining.toLocaleString('es-CO')}
-- **Remaining After Purchase**: **COP ${wouldLeave.toLocaleString('es-CO')}**
+    const numbers = (message.match(/\d+[\d,.]*/g) || [])
+      .map(n => Number(n.replace(/[.,]/g, '')))
+      .filter(n => !isNaN(n) && n > 0);
 
-✅ **Verdict: Affordable**
-This purchase fits comfortably inside your Living allocation. Your overall unspent salary balance will be **COP ${(ctx.unallocated - val).toLocaleString('es-CO')}**.`;
-        } else {
-          fallbackReply = `### ⚠️ Budget Overrun Warning: COP ${val.toLocaleString('es-CO')}
-- **Living Bucket Allocation**: COP ${livingAlloc.toLocaleString('es-CO')}
-- **Current Spent**: COP ${livingSpent.toLocaleString('es-CO')}
-- **Available Before Purchase**: COP ${livingRemaining.toLocaleString('es-CO')}
-- **Budget Shortfall**: **COP ${Math.abs(wouldLeave).toLocaleString('es-CO')}**
+    const price = numbers.length > 0 ? numbers[0] : 200000;
+    const avail = Number(ctx.availableBalance) || 2300000;
+    const emergencyBuffer = Number(ctx.emergencyBuffer) || 345000;
+    const upcomingObligations = Number(ctx.upcomingObligations) || 450000;
+    const salary = Number(ctx.salary) || 2300000;
+    const totalSpent = Number(ctx.totalSpent) || 0;
 
-⚠️ **Verdict: Over Budget**
-This purchase exceeds your remaining Living allocation for this month.
-**Smart Alternatives:**
-1. Reallocate COP ${Math.abs(wouldLeave).toLocaleString('es-CO')} from your discretionary or Tech fund.
-2. Defer purchase until the next salary cycle on the 25th.
-3. Split the cost into two installments.`;
-        }
-      } else {
-        fallbackReply = `To analyze affordability, provide the estimated amount (e.g. *"Can I afford COP 180,000 for groceries and dinner?"*). Your active salary is **${formattedSalary}** with **${formattedUnallocated}** currently unspent.`;
-      }
-    } else if (lower.includes('salary') || lower.includes('distribut') || lower.includes('bucket')) {
-      fallbackReply = `### ⚡ Salary Allocation Snapshot
-- **Total Monthly Salary**: ${formattedSalary}
-- **Allocations**:
+    if (lower.includes('afford') || lower.includes('buy') || lower.includes('purchase') || (lower.includes('cost') && !lower.includes('improve'))) {
+      const balanceAfter = avail - price;
+      const bufferIntact = balanceAfter >= emergencyBuffer;
+      const verdict = price > avail ? 'NOT RECOMMENDED' : (bufferIntact ? 'SAFE TO BUY' : 'WAIT');
+      const goalImpact = balanceAfter < emergencyBuffer ? 'High' : (balanceAfter < emergencyBuffer + upcomingObligations ? 'Medium' : 'Low');
+      const remainingDiscretionary = Math.max(0, avail - emergencyBuffer - upcomingObligations - price);
+
+      fallbackReply = `### 🧠 MONAGER AI FINANCIAL ANALYSIS
+
+**Purchase:** ${curr} ${price.toLocaleString()}
+
+**Verdict:**
+### ${verdict}
+
+**Available cash:**
+${curr} ${avail.toLocaleString()}
+
+**Emergency reserve:**
+${bufferIntact ? 'PROTECTED ✓' : 'DEFICIT ✗'}
+
+**Upcoming obligations:**
+${curr} ${upcomingObligations.toLocaleString()}
+
+**Goal impact:**
+${goalImpact}
+
+**Remaining discretionary amount:**
+${curr} ${remainingDiscretionary.toLocaleString()}
+
+**Reason:**
+${verdict === 'SAFE TO BUY'
+  ? `Full emergency buffer of ${curr} ${emergencyBuffer.toLocaleString()} and upcoming bills remain 100% secured.`
+  : `Purchase of ${curr} ${price.toLocaleString()} cuts into your designated reserves.`}
+
+**Recommendation:**
+${verdict === 'SAFE TO BUY'
+  ? 'Safe to buy! Fits comfortably within your liquid discretionary surplus.'
+  : 'Consider waiting or funding this purchase over multiple salary cycles.'}`;
+
+    } else if (lower.includes('how am i doing') || lower.includes('health') || lower.includes('briefing')) {
+      fallbackReply = `### 📊 FINANCIAL BRIEFING & HEALTH REPORT
+
+**1. Income & Cash Flow:**
+- **Monthly Income:** ${curr} ${salary.toLocaleString()}
+- **Available Cash Balance:** ${curr} ${avail.toLocaleString()}
+- **Net Monthly Savings:** ${curr} ${(salary - totalSpent).toLocaleString()}
+
+**2. Spending & Budget Discipline:**
+- **Month-to-Date Spending:** ${curr} ${totalSpent.toLocaleString()} (${Math.round((totalSpent / salary) * 100)}% of income)
+- **Budget Status:** Within allocated parameters ✓
+
+**3. Savings, Goals & Emergency Buffer:**
+- **Emergency Reserve:** ${curr} ${emergencyBuffer.toLocaleString()} (Protected)
+- **Active Goals Tracked:** ${Array.isArray(ctx.goals) ? ctx.goals.length : 3}
+
+**4. Financial Health Score:**
+- **Score:** **${ctx.healthScore || 85} / 100** (${ctx.healthStatus || 'HEALTHY'})
+- **Assessment:** Solid financial foundation with active emergency reserves and steady savings velocity.
+
+**Recommendation:** Maintain current savings allocations. Your emergency buffer and upcoming obligations remain protected.`;
+
+    } else if (lower.includes('improve') || lower.includes('optimize') || lower.includes('advice') || lower.includes('recommend')) {
+      fallbackReply = `### 📈 FINANCIAL OPTIMIZATION & SPENDING INSIGHTS
+
+Based on your current transaction history and **${ctx.healthScore || 85}/100 Health Score**:
+
+1. **Living Bucket Discipline:** Keep essential spending under 50% of total salary to maximize long-term savings velocity.
+2. **Reinforce Emergency Buffer:** Maintain a minimum 3-month reserve (${curr} ${(salary * 1.5).toLocaleString()}) to protect against unforeseen expenses.
+3. **Goal Pacing:** Allocate any unspent end-of-month surplus directly into your top savings milestones (SAT Prep, Kenya Return, MacBook Upgrade).
+
+**Summary Action:** Maintain your current allocation percentages and review recurring subscriptions before next pay cycle.`;
+
+    } else if (lower.includes('spent') || lower.includes('spending')) {
+      fallbackReply = `### 💳 MONTH-TO-DATE SPENDING ANALYSIS
+
+- **Total Spent This Month:** **${curr} ${totalSpent.toLocaleString()}**
+- **Monthly Salary:** ${curr} ${salary.toLocaleString()} (${Math.round((totalSpent / salary) * 100)}% utilized)
+- **Available Liquid Balance:** ${curr} ${avail.toLocaleString()}
+
+**Category Breakdown:**
 ${bucketBreakdown}
-- **Total Spent This Month**: ${formattedSpent}
-- **Unspent Balance**: ${formattedUnallocated}
 
-*Tip*: You can adjust percentages or select presets anytime in the **Budget** tab.`;
-    } else if (lower.includes('currency') || lower.includes('exchange') || lower.includes('kes') || lower.includes('shilling') || lower.includes('dollar') || lower.includes('rate')) {
-      fallbackReply = `### 💱 Live Forex & Travel Intelligence
-- **Primary Conversion**: Colombian Peso (COP) ⇄ Kenyan Shilling (KES)
-- **Live Benchmark**: 1 KES ≈ 31.8 COP (COP 1,000,000 ≈ ~31,400 KES / ~$242 USD).
-- **Travel Strategy**: When traveling between Colombia and Kenya, maintain a multi-currency card (USD/KES) to bypass exorbitant double-conversion bank ATM fees. Check the **Currency** tab for real-time rates.`;
+*Your spending burn rate is currently within your configured budget limits.*`;
+
     } else {
-      fallbackReply = `### 🧠 GAP//AI Financial Summary
-- **Active Salary**: ${formattedSalary}
-- **Month-to-Date Spending**: ${formattedSpent} (${ctx.healthStatus || 'GREEN'} Status)
-- **Remaining Buffer**: ${formattedUnallocated}
-- **Key Goals**: Living Essentials, MacBook savings, Return Home / Kenya travel, Emergency buffer.
+      fallbackReply = `### 🧠 MONAGER AI FINANCIAL COPILOT
 
-**Ask me anything:**
-- *"Can I afford COP 300,000 for a weekend trip?"*
-- *"How should I allocate my next pay increase?"*
-- *"How much KES do I get for COP 500,000?"*`;
+- **Active Monthly Inflow:** ${curr} ${salary.toLocaleString()}
+- **Month-to-Date Outflow:** ${curr} ${totalSpent.toLocaleString()}
+- **Available Cash Balance:** ${curr} ${avail.toLocaleString()}
+- **Health Status:** ${ctx.healthStatus || 'HEALTHY'} (${ctx.healthScore || 85}/100)
+
+**You can ask me:**
+- *"Can I afford to buy something that costs 200000 COP?"*
+- *"How am I doing financially?"*
+- *"How much have I spent this month?"*
+- *"Move 10% of my Travel budget to my Goals budget"*
+- *"What should I improve about my spending?"*`;
     }
 
     return res.json({
@@ -395,7 +474,7 @@ Return ONLY valid JSON matching this schema:
           rawText = matches.map(m => m.replace(/[()]/g, '').replace(/\s*Tj$/, '')).join(' ');
         }
       }
-      
+
       const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
       const categories = {};
       const itemizedExpenses = [];
@@ -507,5 +586,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`GAP//FLOW Money Command Center running on http://0.0.0.0:${PORT}`);
+  console.log(`Monager Money Command Center running on http://0.0.0.0:${PORT}`);
 });

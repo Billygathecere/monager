@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary & Vision
 
-**MONAGER V4** is the evolution of the Monager personal financial management platform into a **production-quality, intelligent, local-first money command center** featuring an autonomous, safety-guarded AI financial agent (**GAP//AI V4**).
+**MONAGER V4** is the evolution of the Monager personal financial management platform into a **production-quality, intelligent, local-first money command center** featuring an autonomous, safety-guarded AI financial agent (**Monager AI V4**).
 
 The core operational cycle is:
 
@@ -29,7 +29,7 @@ The core operational cycle is:
                                   │ Context Ingestion
                                   ▼
                   ┌─────────────────────────────────┐
-                  │       GAP//AI V4 AGENT          │
+                  │     MONAGER AI V4 AGENT         │
                   │   (Understands Full State)      │
                   └───────────────┬─────────────────┘
                                   │ Structured Tool Calling
@@ -62,13 +62,13 @@ The core operational cycle is:
 
 ### 2.2 Incomplete or Simulated Features (To Be Replaced)
 1. **Receipt Scanner (SIMULATED)**: Currently, `captureReceiptSnapshot()` picks a random dummy receipt (`Éxito`, `D1 Tienda`, `Juan Valdez`) from a hardcoded array after a timeout. **No actual OCR or vision processing is performed on the captured image.**
-2. **GAP//AI Agent Capabilities (PASSIVE ONLY)**: The existing `/api/ai/chat` endpoint is a passive conversational interface returning static markdown. **It lacks tool/function calling, cannot perform state modifications, and cannot execute user commands** (e.g. recording expenses, reallocating budgets, or creating savings goals).
+2. **Monager AI Agent Capabilities (PASSIVE ONLY)**: The existing `/api/ai/chat` endpoint is a passive conversational interface returning static markdown. **It lacks tool/function calling, cannot perform state modifications, and cannot execute user commands** (e.g. recording expenses, reallocating budgets, or creating savings goals).
 3. **Savings Goals (INCOMPLETE)**: Savings goals (such as the MacBook or Travel funds) are only tracked as standard budget categories, with no dedicated entity tracking target amounts, target dates, accumulated totals, monthly velocity, or projected completion dates.
 4. **Payday Reminders (SIMULATED BACKGROUND)**: 25th payday reminders rely entirely on in-memory `setInterval` loops while the browser tab is open. If the tab is closed, reminders cannot fire without a Web Push notification backend.
 5. **Geolocation Currency Switching (HEURISTIC)**: Country detection currently uses Euclidean distance to Bogota vs. Nairobi coordinates rather than real reverse geocoding, and automatically changes currency without user consent.
 
 ### 2.3 Technical Risks & Inconsistencies
-- **Branding & Version Fragmentation**: References to `GAP//FLOW`, `Monager`, `v3.1.0`, and `v3.2.0` exist across `package.json`, `manifest.webmanifest`, `VERSION.txt`, `sw.js`, and `DEPLOYMENT.md`.
+- **Legacy Branding & Version Consolidation**: Resolved previous branding fragmentation into unified **Monager v3.2.0** across `package.json`, `manifest.webmanifest`, `VERSION.txt`, `sw.js`, and `DEPLOYMENT.md`.
 - **Lack of Guardrails on AI Actions**: No confirmation or preview mechanism exists for financial mutations triggered via natural language.
 - **Skipped Salary Inconsistency**: When a user skips a month, the system does not record a structured `salaryStatus: 'skipped'` record in history, risking skewed analytics.
 - **XSS / HTML Sanitization Vulnerabilities**: Several innerHTML insertions format user notes and chat messages with basic regex rather than a sanitized pipeline.
@@ -116,7 +116,7 @@ To ensure optimal modularity, performance, and maintainability, the application 
 
 ## 4. Subsystem Specifications
 
-### 4.1 GAP//AI V4 — Genuine Agent & Tool Calling Architecture
+### 4.1 Monager AI V4 — Genuine Agent & Tool Calling Architecture
 
 #### Interaction Workflow:
 ```

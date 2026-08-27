@@ -1,6 +1,6 @@
 {
-  "name": "GAP//FLOW Money Command Center",
-  "short_name": "GAP//FLOW",
+  "name": "Monager — Personal Money Manager",
+  "short_name": "Monager",
   "id": "./",
   "start_url": "./index.html",
   "scope": "./",
@@ -8,7 +8,7 @@
   "orientation": "portrait",
   "background_color": "#050b14",
   "theme_color": "#07111f",
-  "description": "Personal financial command center for the GAP year.",
+  "description": "A smart personal money manager for budgeting, goals, spending analytics and financial planning.",
   "icons": [
     {
       "src": "icons/icon.svg",

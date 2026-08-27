@@ -1,4 +1,4 @@
-const CACHE = 'gapflow-v3.2.0';
+const CACHE = 'monager-v3.2.0';
 const ASSETS = [
   '/',
   '/index.html',
@@ -41,7 +41,7 @@ self.addEventListener('notificationclick', event => {
 });
 
 self.addEventListener('push', event => {
-  let data = { title: 'GAP//FLOW Notification', body: 'Financial reminder alert.' };
+  let data = { title: 'Monager Notification', body: 'Financial reminder alert.' };
   if (event.data) {
     try {
       data = event.data.json();

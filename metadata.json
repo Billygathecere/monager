@@ -1,6 +1,6 @@
 {
-  "name": "GAP//FLOW Money Command Center",
-  "description": "Multi-view personal financial command center with smart salary auto-distribution, expense tracking, live currency exchanger, appearance customization, notifications, and permissions manager.",
+  "name": "Monager",
+  "description": "A smart personal money manager for budgeting, goals, spending analytics and financial planning.",
   "requestFramePermissions": ["camera", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

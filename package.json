@@ -1,12 +1,14 @@
 {
   "name": "monager",
-  "version": "3.1.0",
-  "description": "GAP//FLOW Money Command Center",
+  "version": "3.2.0",
+  "description": "Monager — Personal Money Manager",
   "type": "module",
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "build": "node -e 'console.log(\"Build successful\")'"
+    "test": "node tests/domain.test.js",
+    "lint": "node tests/domain.test.js",
+    "build": "node tests/domain.test.js && node -e 'console.log(\"Build successful\")'"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",

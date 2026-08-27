@@ -1,4 +1,4 @@
-# GAP//FLOW v3.1
+# Monager v3.2
 
 Upload the entire folder to an HTTPS static host. Keep `icons/icon.svg`, `manifest.webmanifest`, `sw.js`, and `index.html` together. Open the HTTPS URL in Chrome on Android and choose Install App / Add to Home screen.
 
